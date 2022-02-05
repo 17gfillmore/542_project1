@@ -26,6 +26,7 @@
         </div>
     </div>
     <div id="content">
+        <div id="scriptures"></div>
         <div id="navigator"></div>
         <div id="map"></div>
     </div>
@@ -42,7 +43,10 @@
 
         ready(function () {
             Scriptures.init(() => { console.log("Initialized scriptures module"); });
+            window.addEventListener("hashchange", Scriptures.onHashChanged);
         });
+
+
     </script>
 
 </body>
