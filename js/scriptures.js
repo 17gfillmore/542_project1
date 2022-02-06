@@ -4,6 +4,7 @@ const Scriptures = (function () {
     // CONSTANTS
     const BOTTOM_PADDING = "<br /><br />";
     const CLASS_BOOKS = "books";
+    const CLASS_BUTTON = "btn";
     const CLASS_VOLUME = "volume";
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = 'scriptures';
@@ -23,6 +24,8 @@ const Scriptures = (function () {
     // PRIVATE METHOD DECLARATIONS
     let ajax;
     let bookChapterValid;
+    let booksGrid;
+    let booksGridContent;
     let cacheBooks;
     let htmlAnchor;
     let htmlDiv;
@@ -34,6 +37,7 @@ const Scriptures = (function () {
     let navigateBook;
     let navigateHome;
     let onHashChanged;
+    let volumesGridContent;
 
 
     // PRIVATE METHODS
@@ -72,6 +76,28 @@ const Scriptures = (function () {
 
         return true;
     };
+
+    booksGrid = function (volume) {
+        return htmlDiv({
+            classKey: CLASS_BOOKS,
+            content: booksGridContent(volume)
+        });
+    };
+
+    booksGridContent = function (volume) {
+        let gridContent = '';
+
+        volume.books.forEach(function (book) {
+            gridContent += htmlLink({
+                classKey: CLASS_BUTTON,
+                id: book.id,
+                href: `#${volume.id}:${book.id}`,
+                content: book.gridName
+            });
+        });
+
+        return gridContent;
+    }
 
     cacheBooks = function (callback) {
         volumes.forEach(volume => {
@@ -179,12 +205,11 @@ const Scriptures = (function () {
     };
 
     navigateHome = function(volumeId) {
-        document.getElementById(DIV_SCRIPTURES).innerHTML = 
-        "<div>Old Testament</div>" + 
-        "<div>New Testament</div>" + 
-        "<div>Book of Mormon</div>" + 
-        "<div>Doctrine and Covenants</div>" + 
-        "<div>Pearl of Great Price</div>" + volumeId;
+        document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
+            id: DIV_SCRIPTURES_NAVIGATOR,
+            content: volumesGridContent(volumeId)
+        });
+
     };
 
     onHashChanged = function () {
@@ -225,6 +250,23 @@ const Scriptures = (function () {
         }
     };
 
+
+    volumesGridContent = function (volumeId) {
+        let gridContent = '';
+
+        volumes.forEach(function (volume) {
+            if (volumeId === undefined || volumeId === volume.id) {
+                gridContent += htmlDiv({
+                    classKey: CLASS_VOLUME,
+                    content: htmlAnchor(volume) + htmlElement(TAG_HEADERS, volume.fullName)
+                });
+
+                gridContent += booksGrid(volume);
+            }
+        });
+
+        return gridContent;
+    };
 
 
     // PUBLIC API

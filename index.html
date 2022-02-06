@@ -13,7 +13,7 @@
     <meta property="og:url" content="">
     <meta property="og:image" content="">
 
-    <link href="css/main.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
 
     <meta name="theme-color" content="#fafafa">
 </head>
@@ -42,7 +42,7 @@
         };
 
         ready(function () {
-            Scriptures.init(() => { console.log("Initialized scriptures module"); });
+            Scriptures.init(() => { Scriptures.onHashChanged(); });
             window.addEventListener("hashchange", Scriptures.onHashChanged);
         });
 
