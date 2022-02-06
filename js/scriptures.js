@@ -5,6 +5,7 @@ const Scriptures = (function () {
     const BOTTOM_PADDING = "<br /><br />";
     const CLASS_BOOKS = "books";
     const CLASS_BUTTON = "btn";
+    const CLASS_CHAPTER = "chapter";
     const CLASS_VOLUME = "volume";
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = 'scriptures';
@@ -26,6 +27,8 @@ const Scriptures = (function () {
     let bookChapterValid;
     let booksGrid;
     let booksGridContent;
+    let chaptersGrid;
+    let chaptersGridContent;
     let cacheBooks;
     let htmlAnchor;
     let htmlDiv;
@@ -97,7 +100,35 @@ const Scriptures = (function () {
         });
 
         return gridContent;
-    }
+    };
+
+    chaptersGrid = function (book) {
+        return htmlDiv({
+            classKey: CLASS_VOLUME,
+            content: htmlElement(TAG_HEADERS, book.fullName)
+        }) + htmlDiv({
+            classKey: CLASS_BOOKS,
+            content: chaptersGridContent(book)
+        });
+    };
+
+    chaptersGridContent = function (book) {
+        let gridContent = '';
+        let chapter = 1;
+
+        while (chapter <= book.numChapters) {
+            gridContent += htmlLink({
+                classKey: `${CLASS_BUTTON} ${CLASS_CHAPTER}`,
+                id: chapter,
+                href: `#0:${book.id}:${chapter}`,
+                content: chapter
+            });
+
+            chapter += 1;
+        }
+
+        return gridContent;
+    };
 
     cacheBooks = function (callback) {
         volumes.forEach(volume => {
@@ -195,13 +226,24 @@ const Scriptures = (function () {
             }
         );
     };
+
+
+    navigateBook = function(bookId) {
+        let book = books[bookId];
+
+        if (book.numChapters <= 1) {
+            navigateChapter(bookId, book.numChapters);
+        } else {
+            document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
+                id: DIV_SCRIPTURES_NAVIGATOR,
+                content: chaptersGrid(book)
+            });
+        }
+    };
+
     navigateChapter = function(bookId, chapter) {
         console.log("navigate chapter " + bookId + ',' + chapter);
 
-    };
-
-    navigateBook = function(bookId) {
-        console.log("navigate book " + bookId);
     };
 
     navigateHome = function(volumeId) {
@@ -209,7 +251,6 @@ const Scriptures = (function () {
             id: DIV_SCRIPTURES_NAVIGATOR,
             content: volumesGridContent(volumeId)
         });
-
     };
 
     onHashChanged = function () {
