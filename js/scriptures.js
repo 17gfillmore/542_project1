@@ -15,6 +15,7 @@ const Scriptures = (function () {
     const TAG_HEADERS = "h5";
     const URL_BASE = "https://scriptures.byu.edu/";
     const URL_BOOKS = `${URL_BASE}mapscrip/model/books.php`;
+    const URL_SCRIPTURES = `${URL_BASE}mapscrip/mapgetscrip.php`;
     const URL_VOLUMES = `${URL_BASE}mapscrip/model/volumes.php`;
 
 
@@ -30,6 +31,9 @@ const Scriptures = (function () {
     let chaptersGrid;
     let chaptersGridContent;
     let cacheBooks;
+    let encodedScripturesUrlParameters;
+    let getScripturesCallback;
+    let getScripturesFailure;
     let htmlAnchor;
     let htmlDiv;
     let htmlElement;
@@ -44,13 +48,17 @@ const Scriptures = (function () {
 
 
     // PRIVATE METHODS
-    ajax = function (url, successCallback, failureCallback) {
+    ajax = function (url, successCallback, failureCallback, skipJsonParse) {
         let request = new XMLHttpRequest();
         request.open('GET', url, true);
 
         request.onload = function() {
-            if (this.status >= REQUEST_STATUS_OK && this.status < REQUEST_STATUS_ERROR) {
-                let data = JSON.parse(this.response);
+            if (request.status >= REQUEST_STATUS_OK && request.status < REQUEST_STATUS_ERROR) {
+                let data = (
+                    skipJsonParse 
+                    ? request.response 
+                    : JSON.parse(request.response)
+                    );
 
                 if (typeof successCallback === 'function') {
                     successCallback(data);
@@ -149,6 +157,31 @@ const Scriptures = (function () {
         }
     };
 
+    encodedScripturesUrlParameters = function (bookId, chapter, verses, isJst) {
+        if (bookId !== undefined && chapter !== undefined) {
+            let options = '';
+ 
+            if (verses !== undefined) {
+                options += verses;
+            }
+            if (isJst !== undefined) {
+                options += "&jst=JST";
+            }
+
+            return `${URL_SCRIPTURES}?book=${bookId}&chap=${chapter}&verses${options}`;
+        }
+    };
+
+    getScripturesCallback = function (chapterHtml) {
+        document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
+
+        //TODO: setupMarkers()
+    };
+
+    getScripturesFailure = function () {
+        document.getElementById(DIV_SCRIPTURES).innerHTML = 'unable to retrieve chapter contents.';
+    };
+
     htmlAnchor = function(volume) {
         return `<a name="v${volume.id}" />`;
     };
@@ -242,8 +275,7 @@ const Scriptures = (function () {
     };
 
     navigateChapter = function(bookId, chapter) {
-        console.log("navigate chapter " + bookId + ',' + chapter);
-
+        ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true);
     };
 
     navigateHome = function(volumeId) {
@@ -306,7 +338,7 @@ const Scriptures = (function () {
             }
         });
 
-        return gridContent;
+        return gridContent + BOTTOM_PADDING;
     };
 
 
