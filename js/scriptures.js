@@ -293,7 +293,7 @@ const Scriptures = (function () {
         return `<div${idString}${classString}>${contentString}</div>`;
     };
 
-    htmlElement = function (tagName, content) {
+    htmlElement = function (tagName, content, classValue) {
         let classString = "";
 
         if (classValue !== undefined) {
