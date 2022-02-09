@@ -1,14 +1,12 @@
 const Scriptures = (function () {
     "use strict";
 
-    // CONSTANTS
+    // CONSTANTS -----------------------------------------------
     const BOTTOM_PADDING = "<br /><br />";
     const CLASS_BOOKS = "books";
     const CLASS_BUTTON = "btn";
     const CLASS_CHAPTER = "chapter";
-    // const CLASS_ICON = "material-icons";
     const CLASS_VOLUME = "volume";
-    // const DIV_BREADCRUMBS = "crumbs";
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = 'scriptures';
     const INDEX_FLAG = 11;
@@ -16,34 +14,22 @@ const Scriptures = (function () {
     const INDEX_LONGITUDE = 4;
     const INDEX_PLACENAME = 2;
     const LAT_LNG_PARSER = /\((.*),'(.*)',(.*),(.*),(.*),(.*),(.*),(.*),(.*),(.*),'(.*)'\)/;
-    // const MAX_ZOOM_LEVEL = 18;
-    // const MIN_ZOOM_LEVEL = 6;
     const REQUEST_GET = 'GET';
     const REQUEST_STATUS_OK = 200;
     const REQUEST_STATUS_ERROR = 400;
     const TAG_HEADERS = "h5";
-    // const TAG_LIST_ITEM = "li";
-    // const TAG_SPAN = "span";
-    // const TAG_UNORDERED_LIST = "ul";
-    // const TEXT_TOP_LEVEL = "The Scriptures";
     const URL_BASE = "https://scriptures.byu.edu/";
     const URL_BOOKS = `${URL_BASE}mapscrip/model/books.php`;
     const URL_SCRIPTURES = `${URL_BASE}mapscrip/mapgetscrip.php`;
     const URL_VOLUMES = `${URL_BASE}mapscrip/model/volumes.php`;
-    // const ZOOM_RATIO = 450;
 
 
-    // PRIVATE VARIABLES
+    // PRIVATE VARIABLES --------------------------------------
     let books;
-    let geoplaces = [];
     let gmMarkers = [];
-    let requestedBookId;
-    let requestedChapter;
-    let requestedNextPrevious;
     let volumes;
 
-    // PRIVATE METHOD DECLARATIONS
-    let addGeoplace;
+    // PRIVATE METHOD DECLARATIONS -----------------------------
     let addMarker;
     let ajax;
     let bookChapterValid;
@@ -54,48 +40,23 @@ const Scriptures = (function () {
     let cacheBooks;
     let clearMarkers;
     let encodedScripturesUrlParameters;
-    let geoplaceIndex;
     let getScripturesCallback;
     let getScripturesFailure;
     let htmlAnchor;
     let htmlDiv;
     let htmlElement;
     let htmlLink;
-    let htmlListItem;
-    let htmlListItemLink;
     let init;
-    let injectBreadcrumbs;
-    let mergePlacename;
     let navigateBook;
     let navigateChapter;
     let navigateHome;
-    let nextChapter;
-    let nextPreviousMarkup;
     let onHashChanged;
-    let previousChapter;
     let setupMarkers;
     let showLocation;
-    let testGeoPlaces;
     let titleForBookChapter;
     let volumesGridContent;
-    let zoomMapToFitMarkers;
 
-
-
-    // PRIVATE METHODS
-    addGeoplace = function (placename, latitude, longitude) {
-        let index = geoplaceIndex(latitude, longitude);
-
-        if (index >= 0) {
-            mergePlaceName(placename, index);
-        } else {
-            geoplaces.push({
-                latitude,
-                longitude,
-                placename
-            });
-        }
-    };
+    // PRIVATE METHODS ----------------------------------------
 
     addMarker = function (placename, latitude, longitude) {
         let marker = new google.maps.Marker({
@@ -222,7 +183,6 @@ const Scriptures = (function () {
         });
 
         gmMarkers = [];
-        geoplaces = [];
     };
 
     encodedScripturesUrlParameters = function (bookId, chapter, verses, isJst) {
@@ -238,27 +198,6 @@ const Scriptures = (function () {
 
             return `${URL_SCRIPTURES}?book=${bookId}&chap=${chapter}&verses${options}`;
         }
-    };
-
-    geoplaceIndex = function (latitude, longitude) {
-        let i = geoplaces.length - 1;
-
-        while (i >= 0) {
-            const geoplace = geoplaces[i];
-
-            // Note: here is the safe way to compare IEEE floating-point
-            // numbers: compare their difference to a small number
-            const latitudeDelta = Math.abs(geoplace.latitude - latitude);
-            const longitudeDelta = Math.abs(geoplace.longitude - longitude);
-
-            if (latitudeDelta < 0.00000001 && longitudeDelta < 0.00000001) {
-                return i;
-            }
-
-            i -= 1;
-        }
-
-        return -1;
     };
 
     getScripturesCallback = function (chapterHtml) {
@@ -356,14 +295,6 @@ const Scriptures = (function () {
         );
     };
 
-    mergePlacename = function (placename, index) {
-        let geoplace = geoplaces[index];
-
-        if (!geoplace.placename.includes(placename)) {
-            geoplace.placename += ", " + placename;
-        }
-    };
-
     navigateBook = function(bookId) {
         let book = books[bookId];
 
@@ -386,37 +317,6 @@ const Scriptures = (function () {
             id: DIV_SCRIPTURES_NAVIGATOR,
             content: volumesGridContent(volumeId)
         });
-    };
-
-
-    nextChapter = function (bookId, chapter) {
-        let book = books[bookId];
-
-        if (book !== undefined) {
-            if (chapter < book.numChapters) {
-                return [
-                    bookId, 
-                    chapter + 1,
-                    titleForBookChapter(book, chapter + 1)
-                ];
-            }
-
-            let nextBook = books[bookId + 1];
-
-            if (nextBook !== undefined) {
-                let nextChapterValue = 0;
-
-                if (nextBook.numChapters > 0) {
-                    nextChapterValue = 1;
-                }
-
-                return [
-                    nextBook.id,
-                    nextChapterValue,
-                    titleForBookChapter(nextBook, nextChapterValue)
-                ];
-            }
-        }
     };
 
     onHashChanged = function () {
@@ -512,12 +412,11 @@ const Scriptures = (function () {
     };
 
 
-    // PUBLIC API
+    // PUBLIC API -------------------------------------------
 
     return {
         init,
         onHashChanged,
         showLocation,
-        testGeoPlaces
     };
 }());
