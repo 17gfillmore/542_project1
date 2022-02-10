@@ -94,6 +94,7 @@ div.subtitle {
 
 #breadcrumbs {
     padding-top: 10px;
+    padding-bottom: 10px;
     justify-content: left;
 }
 
@@ -103,7 +104,9 @@ div.subtitle {
 
 .crumb2 {
     padding-left: 10px;
+    padding-right: 10px;
 }
+
 
 #prevnext {
     padding-bottom: 10px;

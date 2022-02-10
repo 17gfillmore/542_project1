@@ -8,7 +8,6 @@ const Scriptures = (function () {
     const CLASS_BUTTON = "btn";
     const CLASS_CHAPTER = "chapter";
     const CLASS_VOLUME = "volume";
-    const DIV_NAVBAR = "navbar"
     const DIV_PREVNEXT = 'prevnext';
     const DIV_BREADCRUMBS = 'breadcrumbs';
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
@@ -51,14 +50,12 @@ const Scriptures = (function () {
     let htmlElement;
     let htmlLink;
     let init;
+    let initMap;
     let navigateBook;
     let navigateChapter;
     let navigateHome;
     let onHashChanged;
-    let setBreadcrumb;
     let setPrevNext;
-    let setFullNav;
-    let setHomeNav;
     let setupMarkers;
     let showLocation;
     let titleForBookChapter;
@@ -71,6 +68,7 @@ const Scriptures = (function () {
             position: {lat: Number(latitude), lng: Number(longitude)},
             map,
             title: placename, 
+            label: placename,
             animation: google.maps.Animation.DROP
         })
 
@@ -139,6 +137,24 @@ const Scriptures = (function () {
         return gridContent;
     };
 
+    cacheBooks = function (callback) {
+        volumes.forEach(function (volume) {
+            let volumeBooks = [];
+            let bookId = volume.minBookId;
+
+            while (bookId <= volume.maxBookId) {
+                volumeBooks.push(books[bookId])
+                bookId += 1;
+            }
+
+            volume.books = volumeBooks;
+        });
+
+        if (typeof callback === "function") {
+            callback();
+        }
+    };
+
     chaptersGrid = function (book) {
         return htmlDiv({
             classKey: CLASS_VOLUME,
@@ -165,24 +181,6 @@ const Scriptures = (function () {
         }
 
         return gridContent;
-    };
-
-    cacheBooks = function (callback) {
-        volumes.forEach(function (volume) {
-            let volumeBooks = [];
-            let bookId = volume.minBookId;
-
-            while (bookId <= volume.maxBookId) {
-                volumeBooks.push(books[bookId])
-                bookId += 1;
-            }
-
-            volume.books = volumeBooks;
-        });
-
-        if (typeof callback === "function") {
-            callback();
-        }
     };
     
     clearMarkers = function () {
@@ -276,7 +274,6 @@ const Scriptures = (function () {
         return `<a${idString}${classString}${hrefString}>${contentString}</a>`;
     };
 
-    
     init = function (callback) {
         let booksLoaded = false;
         let volumesLoaded = false;
@@ -303,20 +300,31 @@ const Scriptures = (function () {
         );
     };
 
+    initMap = function() {
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat: 31.7683, lng: 35.2137 },
+            zoom: 8,
+        });
+    }
+
     navigateBook = function(bookId) {
         let book = books[bookId];
 
         document.getElementById(DIV_PREVNEXT).innerHTML = '';
-        
+
         if (book.numChapters <= 1) { // go straight to the text
             navigateChapter(bookId, book.numChapters);
         } else {        // when navigating to the chapter links view
             document.getElementById(DIV_BREADCRUMBS).innerHTML = htmlLink({
-                classKey: "",
+                classKey: "crumb1",
                 id: "home",
                 content: "home",
                 href: "#"
-            });
+            }) + '<' + htmlLink({
+                classKey: 'crumb2',
+                content: `${book.fullName}`
+            })
+            
             document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
                 id: DIV_SCRIPTURES_NAVIGATOR,
                 content: chaptersGrid(book)
@@ -328,14 +336,17 @@ const Scriptures = (function () {
         document.getElementById(DIV_BREADCRUMBS).innerHTML = htmlLink({
             classKey: "crumb1",
             id: "home",
-            content: "home",
+            content: 'home',
             href: "#"
         }) + '<' + htmlLink({
             classKey: "crumb2",
             id: "book",
             content: `${books[bookId].fullName}`,
             href: `#${books[bookId].parentBookId}:${bookId}`
-        }); 
+        }) + '<' + htmlLink({
+            classKey: 'crumb2',
+            content: `${chapter}`
+        })
         setPrevNext(bookId, chapter);
         ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true);
     };
@@ -410,7 +421,7 @@ const Scriptures = (function () {
             // just go to the prev chapter
             prev = `#${book.parentBookId}:${bookId}:${chapter - 1}`;
         } else {
-            // if incremented id isn't a book, look up the last book in the prev volume
+            // if incremented id isn't a book, look up the last book id in the prev volume
             if (prevBook === undefined) {
                 // dict lookup of last bookId of prev volume
                 prevBook = books[BOOKID_SKIPS_PREV[book.id]]
@@ -423,12 +434,12 @@ const Scriptures = (function () {
         htmlLink({
             classKey: "",
             id: "prev",
-            content: "prev",
+            content: "< prev",
             href: `${prev}`
         }) + htmlLink({
             classString: "",
             id: "next",
-            content: "next",
+            content: "next >",
             href: `${next}`
         });
     }
@@ -437,6 +448,7 @@ const Scriptures = (function () {
         if (gmMarkers.length > 0) {
             clearMarkers();
         }
+        let bounds = new google.maps.LatLngBounds();
 
         document.querySelectorAll("a[onclick^=\"showLocation(\"]").forEach(function (element) {
             let matches = LAT_LNG_PARSER.exec(element.getAttribute("onclick"));
@@ -452,12 +464,19 @@ const Scriptures = (function () {
 
                 }
                 addMarker(placename, latitude, longitude);
+                bounds.extend({lat: Number(latitude), lng: Number(longitude)});
             }
         });
+
+        // if there are any markers, zoom and center the map appropriately; else, show default Jerusalem view
+        gmMarkers.length ? map.fitBounds(bounds) : initMap()
     };
 
     showLocation = function (id, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {
         console.log(id, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading);
+        // zoom in on point selected, center map on it
+        map.panTo({lat: latitude, lng: longitude});
+        map.setZoom(Math.round(viewAltitude / 500));
     };
 
     titleForBookChapter = function (book, chapter) {

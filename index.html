@@ -42,6 +42,8 @@
     <script src="js/scriptures.js" type="text/javascript"></script>
     <script type="text/javascript">
         let map;
+        let showLocation;
+
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: 31.7683, lng: 35.2137 },
@@ -59,6 +61,7 @@
 
         ready(function () {
             Scriptures.init(() => { Scriptures.onHashChanged(); });
+            showLocation = Scriptures.showLocation;
             window.addEventListener("hashchange", Scriptures.onHashChanged);
         });
     </script>
