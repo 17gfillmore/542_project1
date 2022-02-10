@@ -3,10 +3,14 @@ const Scriptures = (function () {
 
     // CONSTANTS -----------------------------------------------
     const BOTTOM_PADDING = "<br /><br />";
+    const BOOKID_SKIPS_PREV = {201: '166', 301: '219', 401: '303'}
     const CLASS_BOOKS = "books";
     const CLASS_BUTTON = "btn";
     const CLASS_CHAPTER = "chapter";
     const CLASS_VOLUME = "volume";
+    const DIV_NAVBAR = "navbar"
+    const DIV_PREVNEXT = 'prevnext';
+    const DIV_BREADCRUMBS = 'breadcrumbs';
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = 'scriptures';
     const INDEX_FLAG = 11;
@@ -51,6 +55,10 @@ const Scriptures = (function () {
     let navigateChapter;
     let navigateHome;
     let onHashChanged;
+    let setBreadcrumb;
+    let setPrevNext;
+    let setFullNav;
+    let setHomeNav;
     let setupMarkers;
     let showLocation;
     let titleForBookChapter;
@@ -201,8 +209,8 @@ const Scriptures = (function () {
     };
 
     getScripturesCallback = function (chapterHtml) {
+        // document.getElementById(DIV_NAVBAR).innerHTML = '<div></div>';
         document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
-
         setupMarkers();
     };
 
@@ -298,9 +306,17 @@ const Scriptures = (function () {
     navigateBook = function(bookId) {
         let book = books[bookId];
 
-        if (book.numChapters <= 1) {
+        document.getElementById(DIV_PREVNEXT).innerHTML = '';
+        
+        if (book.numChapters <= 1) { // go straight to the text
             navigateChapter(bookId, book.numChapters);
-        } else {
+        } else {        // when navigating to the chapter links view
+            document.getElementById(DIV_BREADCRUMBS).innerHTML = htmlLink({
+                classKey: "",
+                id: "home",
+                content: "home",
+                href: "#"
+            });
             document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
                 id: DIV_SCRIPTURES_NAVIGATOR,
                 content: chaptersGrid(book)
@@ -309,10 +325,24 @@ const Scriptures = (function () {
     };
 
     navigateChapter = function(bookId, chapter) {
+        document.getElementById(DIV_BREADCRUMBS).innerHTML = htmlLink({
+            classKey: "crumb1",
+            id: "home",
+            content: "home",
+            href: "#"
+        }) + '<' + htmlLink({
+            classKey: "crumb2",
+            id: "book",
+            content: `${books[bookId].fullName}`,
+            href: `#${books[bookId].parentBookId}:${bookId}`
+        }); 
+        setPrevNext(bookId, chapter);
         ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true);
     };
 
     navigateHome = function(volumeId) {
+        document.getElementById(DIV_BREADCRUMBS).innerHTML = '';
+        document.getElementById(DIV_PREVNEXT).innerHTML = '';
         document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
             id: DIV_SCRIPTURES_NAVIGATOR,
             content: volumesGridContent(volumeId)
@@ -356,6 +386,52 @@ const Scriptures = (function () {
             }
         }
     };
+
+    setPrevNext = function (bookId, chapter) {
+        let next = ''
+        let prev = ''
+        
+        let book = books[bookId];
+        let nextBook = books[bookId + 1];
+        if (bookChapterValid(bookId, chapter + 1)) { 
+            // just go to the next chapter
+            next = `#${book.parentBookId}:${bookId}:${chapter + 1}`;
+        } else {
+            // if the next book doesn't exist at incremented id, it's a new volume
+            if (nextBook === undefined) {
+                nextBook = books[`${book.parentBookId}01`]
+            }
+            // next book, chap1 (unless there are 0 chapters in next book)                                         
+            next = `#${nextBook.parentBookId}:${nextBook.id}:${nextBook.numChapters === 0 ? 0 : 1}`
+        }
+
+        let prevBook = books[bookId - 1]
+        if (bookChapterValid(bookId, chapter - 1)) {
+            // just go to the prev chapter
+            prev = `#${book.parentBookId}:${bookId}:${chapter - 1}`;
+        } else {
+            // if incremented id isn't a book, look up the last book in the prev volume
+            if (prevBook === undefined) {
+                // dict lookup of last bookId of prev volume
+                prevBook = books[BOOKID_SKIPS_PREV[book.id]]
+            }
+            // prev book, numChapters (last chapter)                                        
+            prev = `#${prevBook.parentBookId}:${prevBook.id}:${prevBook.numChapters}`
+        }
+
+        document.getElementById(DIV_PREVNEXT).innerHTML = 
+        htmlLink({
+            classKey: "",
+            id: "prev",
+            content: "prev",
+            href: `${prev}`
+        }) + htmlLink({
+            classString: "",
+            id: "next",
+            content: "next",
+            href: `${next}`
+        });
+    }
 
     setupMarkers = function () {
         if (gmMarkers.length > 0) {
@@ -417,6 +493,6 @@ const Scriptures = (function () {
     return {
         init,
         onHashChanged,
-        showLocation,
+        showLocation
     };
 }());
