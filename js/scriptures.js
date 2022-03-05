@@ -8,6 +8,7 @@ const Scriptures = (function () {
     const CLASS_BUTTON = "btn";
     const CLASS_CHAPTER = "chapter";
     const CLASS_VOLUME = "volume";
+    const CRUMB_SPACER = '<';
     const DIV_PREVNEXT = 'prevnext';
     const DIV_BREADCRUMBS = 'breadcrumbs';
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
@@ -55,6 +56,7 @@ const Scriptures = (function () {
     let navigateChapter;
     let navigateHome;
     let onHashChanged;
+    let setBreadcrumbs;
     let setPrevNext;
     let setupMarkers;
     let showLocation;
@@ -75,6 +77,41 @@ const Scriptures = (function () {
         gmMarkers.push(marker);
     };
 
+    const getData = function (url, successCallback, failureCallback, skipJsonParse) {
+        fetch(url).then(function (response) {
+            if (response.ok) {
+                if (skipJsonParse) {
+                    return response.text();
+                } else {
+                    return response.json();
+                }
+            }
+            throw new Error("Network response was not okay");
+        }).then(function (data) {
+            if (typeof successCallback === 'function') {
+                successCallback(data);
+            } else {
+                throw new Error("Callback is not a valid function")
+            }
+        }).catch(function (error) {
+            console.log("Error:", error.message);
+
+            if (typeof failureCallback === 'function') {
+                failureCallback(error)
+            }
+        })
+
+    }
+
+    const getJson = function (url) {
+        return fetch(url).then(function (response) {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error("Network response was not okay")
+        })
+    }
+
     ajax = function (url, successCallback, failureCallback, skipJsonParse) {
         let request = new XMLHttpRequest();
         request.open(REQUEST_GET, url, true);
@@ -82,8 +119,8 @@ const Scriptures = (function () {
         request.onload = function() {
             if (request.status >= REQUEST_STATUS_OK && request.status < REQUEST_STATUS_ERROR) {
                 let data = (
-                    skipJsonParse 
-                    ? request.response 
+                    skipJsonParse
+                    ? request.response
                     : JSON.parse(request.response)
                     );
 
@@ -207,7 +244,6 @@ const Scriptures = (function () {
     };
 
     getScripturesCallback = function (chapterHtml) {
-        // document.getElementById(DIV_NAVBAR).innerHTML = '<div></div>';
         document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
         setupMarkers();
     };
@@ -253,7 +289,6 @@ const Scriptures = (function () {
         let contentString = '';
         let hrefString = '';
         let idString = '';
-        let titleString = "";
         
         if (parameters.classKey !== undefined) {
             classString = ` class="${parameters.classKey}"`;
@@ -275,29 +310,40 @@ const Scriptures = (function () {
     };
 
     init = function (callback) {
-        let booksLoaded = false;
-        let volumesLoaded = false;
+        Promise.all([getJson(URL_BOOKS), getJson(URL_VOLUMES)]).then(jsonResults => {
+            let [ booksResult, volumesResult ] = jsonResults;
 
-        ajax(URL_BOOKS,
-            data => {
-                books = data;
-                booksLoaded = true;
+            books = booksResult;
+            volumes = volumesResult;
 
-                if (volumesLoaded) {
-                    cacheBooks(callback);
-                }
-            }
-        );
-        ajax(URL_VOLUMES,
-            data => {
-                volumes = data;
-                volumesLoaded = true;
+            cacheBooks(callback)
+        }).catch(error => {
+            console.log("Unable to get volumes/books data;", error.message);
+        });
 
-                if (booksLoaded) {
-                    cacheBooks(callback);
-                }
-            }
-        );
+        // let booksLoaded = false;
+        // let volumesLoaded = false;
+
+        // getData(URL_BOOKS,
+        //     data => {
+        //         books = data;
+        //         booksLoaded = true;
+
+        //         if (volumesLoaded) {
+        //             cacheBooks(callback);
+        //         }
+        //     }
+        // );
+        // getData(URL_VOLUMES,
+        //     data => {
+        //         volumes = data;
+        //         volumesLoaded = true;
+
+        //         if (booksLoaded) {
+        //             cacheBooks(callback);
+        //         }
+        //     }
+        // );
     };
 
     initMap = function() {
@@ -311,20 +357,11 @@ const Scriptures = (function () {
         let book = books[bookId];
 
         document.getElementById(DIV_PREVNEXT).innerHTML = '';
+        setBreadcrumbs(book.parentBookId, bookId)
 
         if (book.numChapters <= 1) { // go straight to the text
             navigateChapter(bookId, book.numChapters);
         } else {        // when navigating to the chapter links view
-            document.getElementById(DIV_BREADCRUMBS).innerHTML = htmlLink({
-                classKey: "crumb1",
-                id: "home",
-                content: "home",
-                href: "#"
-            }) + '<' + htmlLink({
-                classKey: 'crumb2',
-                content: `${book.fullName}`
-            })
-            
             document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
                 id: DIV_SCRIPTURES_NAVIGATOR,
                 content: chaptersGrid(book)
@@ -333,26 +370,17 @@ const Scriptures = (function () {
     };
 
     navigateChapter = function(bookId, chapter) {
-        document.getElementById(DIV_BREADCRUMBS).innerHTML = htmlLink({
-            classKey: "crumb1",
-            id: "home",
-            content: 'home',
-            href: "#"
-        }) + '<' + htmlLink({
-            classKey: "crumb2",
-            id: "book",
-            content: `${books[bookId].fullName}`,
-            href: `#${books[bookId].parentBookId}:${bookId}`
-        }) + '<' + htmlLink({
-            classKey: 'crumb2',
-            content: `${chapter}`
-        })
+        setBreadcrumbs(books[bookId].parentBookId, bookId, chapter)
         setPrevNext(bookId, chapter);
+
+        // TODO? update this to use new api (fetch) instead of ajax
         ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true);
     };
 
     navigateHome = function(volumeId) {
-        document.getElementById(DIV_BREADCRUMBS).innerHTML = '';
+        volumeId 
+            ? setBreadcrumbs(volumeId)
+            : setBreadcrumbs();
         document.getElementById(DIV_PREVNEXT).innerHTML = '';
         document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
             id: DIV_SCRIPTURES_NAVIGATOR,
@@ -397,6 +425,43 @@ const Scriptures = (function () {
             }
         }
     };
+
+    setBreadcrumbs = function (volumeId, bookId, chapter) {
+        // the way this is set up assumes that it's only called with parameters for which breadcrumbs are needed.
+        // if you haven't navigated to a book, don't pass a book in. etc
+
+        let crumbs = '';
+        if (volumeId) {
+            crumbs = htmlLink({
+                classKey: "crumb1",
+                id: "home",
+                content: "home",
+                href: "#"
+            })
+            crumbs += CRUMB_SPACER + htmlLink({
+                classKey: 'crumb2',
+                id: "volume",
+                content: `${volumes[volumeId - 1].fullName}`, // volumeId - 1 because the id is inside the array items, and I didn't want to search because they are ordered
+                ...(bookId) && {href: `#${volumeId}`} // only make the crumb a clickable link if we've navigated past it (e.g. are looking at a book)
+            })
+        }
+        if (bookId) {
+            crumbs += CRUMB_SPACER + htmlLink({
+                classKey: 'crumb2',
+                id: 'book',
+                content: `${books[bookId].fullName}`,
+                ...(chapter) && {href: `#${volumeId}:${bookId}`}
+            })
+        }
+        if (chapter) {
+            crumbs += CRUMB_SPACER + htmlLink({
+                classKey: 'crumb2',
+                content: `${titleForBookChapter(books[bookId], chapter)}`
+            })
+        }
+
+        document.getElementById(DIV_BREADCRUMBS).innerHTML = crumbs;
+    }
 
     setPrevNext = function (bookId, chapter) {
         let next = ''
@@ -473,8 +538,6 @@ const Scriptures = (function () {
     };
 
     showLocation = function (id, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {
-        console.log(id, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading);
-        // zoom in on point selected, center map on it
         map.panTo({lat: latitude, lng: longitude});
         map.setZoom(Math.round(viewAltitude / 500));
     };
