@@ -9,7 +9,7 @@ const URL_VOLUMES = `${URL_BASE}mapscrip/model/volumes.php`;
 let books;
 let volumes;
 
-const ajax = function (url, successCallback, failureCallback, skipJsonParse) {
+const ajax = function (url, successCallback, failureCallback, skipJsonParse, animationType) {
     let request = new XMLHttpRequest();
     request.open(REQUEST_GET, url, true);
 
@@ -22,7 +22,7 @@ const ajax = function (url, successCallback, failureCallback, skipJsonParse) {
                 );
 
             if (typeof successCallback === 'function') {
-                successCallback(data);
+                successCallback(data, animationType);
             }
         } else {
             // We reached our target server, but it returned an error

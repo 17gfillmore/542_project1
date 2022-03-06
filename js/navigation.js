@@ -1,6 +1,7 @@
 import { setupMarkers } from "./mapHelper.js";
 import { htmlDiv, htmlAnchor, htmlElement, htmlLink } from "./htmlHelper.js";
 import { ajax, books, volumes, encodedScripturesUrlParameters } from "./mapScripApi.js"
+import { animateToNewChapter, crossfade } from "./animation.js";
 
 // CONSTANTS -----------------------------------------------
 const BOTTOM_PADDING = "<br /><br />";
@@ -13,7 +14,7 @@ const CRUMB_SPACER = '>';
 const DIV_PREVNEXT = 'prevnext';
 const DIV_BREADCRUMBS = 'breadcrumbs';
 const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
-const DIV_SCRIPTURES = 'scriptures';
+const DIV_SCRIPTURES = 'scripnav2'; // this is the invisible div that is then animated to take the place of scripnav1
 const TAG_HEADERS = "h5";
 
 
@@ -80,8 +81,9 @@ const chaptersGridContent = function (book) {
     return gridContent;
 };
 
-const getScripturesCallback = function (chapterHtml) {
-    document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
+const getScripturesCallback = function (chapterHtml, animationType) {
+    // document.getElementById("scriptures").innerHTML = chapterHtml;
+    animateToNewChapter(chapterHtml, animationType);
     setupMarkers();
 };
 
@@ -92,36 +94,40 @@ const getScripturesFailure = function () {
 const navigateBook = function(bookId) {
     let book = books[bookId];
 
-    document.getElementById(DIV_PREVNEXT).innerHTML = '';
+    resetElement(DIV_PREVNEXT);
     setBreadcrumbs(book.parentBookId, bookId)
 
     if (book.numChapters <= 1) { // go straight to the text
         navigateChapter(bookId, book.numChapters);
     } else {        // when navigating to the chapter links view
-        document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
-            id: DIV_SCRIPTURES_NAVIGATOR,
-            content: chaptersGrid(book)
-        });
+        animateToNewChapter(chaptersGrid(book))
+        // document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
+        //     id: DIV_SCRIPTURES_NAVIGATOR,
+        //     content: chaptersGrid(book)
+        // });
     }
 };
 
-const navigateChapter = function(bookId, chapter) {
+const navigateChapter = function(bookId, chapter, animationType) {
     setBreadcrumbs(books[bookId].parentBookId, bookId, chapter)
     setPrevNext(bookId, chapter);
 
     // TODO? update this to use new api (fetch) instead of ajax
-    ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true);
+    ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true, animationType);
 };
 
 const navigateHome = function(volumeId) {
     volumeId 
         ? setBreadcrumbs(volumeId)
-        : setBreadcrumbs();
-    document.getElementById(DIV_PREVNEXT).innerHTML = '';
-    document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
-        id: DIV_SCRIPTURES_NAVIGATOR,
-        content: volumesGridContent(volumeId)
-    });
+        : resetElement(DIV_BREADCRUMBS);
+    resetElement(DIV_PREVNEXT);
+
+    animateToNewChapter(volumesGridContent(volumeId))
+
+    // document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
+    //     id: DIV_SCRIPTURES_NAVIGATOR,
+    //     content: volumesGridContent(volumeId)
+    // });
     setupMarkers();
 };
 
@@ -152,9 +158,10 @@ const onHashChanged = function () {
                 navigateBook(bookId);
             } else {
                 let chapter = Number(ids[2]);
+                let animationType = ids[3] || '';
 
                 if (bookChapterValid(bookId, chapter)) {
-                    navigateChapter(bookId, chapter);
+                    navigateChapter(bookId, chapter, animationType);
                 } else {
                     navigateHome();
                 }
@@ -163,9 +170,18 @@ const onHashChanged = function () {
     }
 };
 
+const resetElement = function (elementId, hideDisplay=true) {
+    document.getElementById(elementId).innerHTML = '';
+    
+    if (hideDisplay) {
+        document.getElementById(elementId).style.display = 'none';
+    }
+}
+
 const setBreadcrumbs = function (volumeId, bookId, chapter) {
     // the way this is set up assumes that it's only called with parameters for which breadcrumbs are needed.
     // if you haven't navigated to a book, don't pass a book in. etc
+    document.getElementById(DIV_BREADCRUMBS).style.display = 'flex'
 
     let crumbs = '';
     if (volumeId) {
@@ -201,6 +217,8 @@ const setBreadcrumbs = function (volumeId, bookId, chapter) {
 }
 
 const setPrevNext = function (bookId, chapter) {
+    document.getElementById(DIV_PREVNEXT).style.display = 'flex'
+
     let next = ''
     let prev = ''
     
@@ -208,20 +226,20 @@ const setPrevNext = function (bookId, chapter) {
     let nextBook = books[bookId + 1];
     if (bookChapterValid(bookId, chapter + 1)) { 
         // just go to the next chapter
-        next = `#${book.parentBookId}:${bookId}:${chapter + 1}`;
+        next = `#${book.parentBookId}:${bookId}:${chapter + 1}:next`;
     } else {
         // if the next book doesn't exist at incremented id, it's a new volume
         if (nextBook === undefined) {
             nextBook = books[`${book.parentBookId}01`]
         }
         // next book, chap1 (unless there are 0 chapters in next book)                                         
-        next = `#${nextBook.parentBookId}:${nextBook.id}:${nextBook.numChapters === 0 ? 0 : 1}`
+        next = `#${nextBook.parentBookId}:${nextBook.id}:${nextBook.numChapters === 0 ? 0 : 1}:next`
     }
 
     let prevBook = books[bookId - 1]
     if (bookChapterValid(bookId, chapter - 1)) {
         // just go to the prev chapter
-        prev = `#${book.parentBookId}:${bookId}:${chapter - 1}`;
+        prev = `#${book.parentBookId}:${bookId}:${chapter - 1}:prev`;
     } else {
         // if incremented id isn't a book, look up the last book id in the prev volume
         if (prevBook === undefined) {
@@ -229,7 +247,7 @@ const setPrevNext = function (bookId, chapter) {
             prevBook = books[BOOKID_SKIPS_PREV[book.id]]
         }
         // prev book, numChapters (last chapter)                                        
-        prev = `#${prevBook.parentBookId}:${prevBook.id}:${prevBook.numChapters}`
+        prev = `#${prevBook.parentBookId}:${prevBook.id}:${prevBook.numChapters}:prev`
     }
 
     document.getElementById(DIV_PREVNEXT).innerHTML = 

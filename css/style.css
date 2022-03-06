@@ -55,6 +55,29 @@ img {
     max-width: 440px;
     border-right: 1px solid #aaa;
     flex: 1 1 30%;
+    overflow: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#mynav {
+
+}
+
+#scriptures {
+    flex-grow: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+}
+
+#scripnav1, #scripnav2 { 
+    position: absolute;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 100%;
 }
 
 #crumb {
@@ -87,12 +110,7 @@ div.subtitle {
     padding: .5em;
 }
 
-#scriptures {
-    min-height: 90%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    position: relative;
-}
+
 
 .nav {
     display: flex;
@@ -216,8 +234,8 @@ div.text {
 
 .scripturewrapper {
     position: absolute;
-    min-height: 100%;
-    max-height: 100%;
+    /* min-height: 100%;
+    max-height: 100%; */
     overflow-x: hidden;
     overflow-y: auto;
     font-family: Georgia, 'Times New Roman', Times, serif;
