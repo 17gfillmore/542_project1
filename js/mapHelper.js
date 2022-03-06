@@ -61,7 +61,9 @@ const setupMarkers = function () {
     });
 
     // if there are any markers, zoom and center the map appropriately; else, show default Jerusalem view
-    gmMarkers.length ? map.fitBounds(bounds) : initMap()
+    gmMarkers.length 
+        ? map.fitBounds(bounds) 
+        : initMap()
 };
 
 const showLocation = function (id, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {

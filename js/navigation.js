@@ -1,5 +1,5 @@
 import { setupMarkers } from "./mapHelper.js";
-import { htmlDiv, htmlAnchor, htmlElement, htmlLink } from "./htmlHelper.js";
+import { htmlDiv, htmlAnchor, htmlElement, htmlImg, htmlLink } from "./htmlHelper.js";
 import { ajax, books, volumes, encodedScripturesUrlParameters } from "./mapScripApi.js"
 import { animateToNewChapter, crossfade } from "./animation.js";
 
@@ -10,13 +10,21 @@ const CLASS_BOOKS = "books";
 const CLASS_BUTTON = "btn";
 const CLASS_CHAPTER = "chapter";
 const CLASS_VOLUME = "volume";
-const CRUMB_SPACER = '>';
 const DIV_PREVNEXT = 'prevnext';
 const DIV_BREADCRUMBS = 'breadcrumbs';
-const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
 const DIV_SCRIPTURES = 'scripnav2'; // this is the invisible div that is then animated to take the place of scripnav1
 const TAG_HEADERS = "h5";
-
+const ICON_CRUMB = htmlImg({
+    src: "./chevron-right.svg",
+    id: "crumb",
+    alt: "breadcrumb icon"
+});
+const ICON_NEXT = htmlImg({
+    src: "./chevron-bar-right.svg",
+});
+const ICON_PREV = htmlImg({
+    src: "./chevron-bar-left.svg",
+});
 
 const bookChapterValid = function (bookId, chapter) {
     let book = books[bookId];
@@ -101,11 +109,8 @@ const navigateBook = function(bookId) {
         navigateChapter(bookId, book.numChapters);
     } else {        // when navigating to the chapter links view
         animateToNewChapter(chaptersGrid(book))
-        // document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
-        //     id: DIV_SCRIPTURES_NAVIGATOR,
-        //     content: chaptersGrid(book)
-        // });
     }
+    setupMarkers();
 };
 
 const navigateChapter = function(bookId, chapter, animationType) {
@@ -123,11 +128,6 @@ const navigateHome = function(volumeId) {
     resetElement(DIV_PREVNEXT);
 
     animateToNewChapter(volumesGridContent(volumeId))
-
-    // document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
-    //     id: DIV_SCRIPTURES_NAVIGATOR,
-    //     content: volumesGridContent(volumeId)
-    // });
     setupMarkers();
 };
 
@@ -186,31 +186,30 @@ const setBreadcrumbs = function (volumeId, bookId, chapter) {
     let crumbs = '';
     if (volumeId) {
         crumbs = htmlLink({
-            classKey: "crumb1",
             id: "home",
-            content: "home",
+            content: "Home",
+            classKey: "crumbLink",
             href: "#"
         })
-        crumbs += CRUMB_SPACER + htmlLink({
-            classKey: 'crumb2',
+        crumbs += '<div id="crumby">' + ICON_CRUMB + htmlLink({
             id: "volume",
             content: `${volumes[volumeId - 1].fullName}`, // volumeId - 1 because the id is inside the array items, and I didn't want to search because they are ordered
+            ...(bookId) && {classKey: "crumbLink"},
             ...(bookId) && {href: `#${volumeId}`} // only make the crumb a clickable link if we've navigated past it (e.g. are looking at a book)
-        })
+        }) + '</div>'
     }
     if (bookId) {
-        crumbs += CRUMB_SPACER + htmlLink({
-            classKey: 'crumb2',
+        crumbs += '<div id="crumby">' + ICON_CRUMB + htmlLink({
             id: 'book',
             content: `${books[bookId].fullName}`,
+            ...(chapter) && {classKey: "crumbLink"},
             ...(chapter) && {href: `#${volumeId}:${bookId}`}
-        })
+        }) + '</div>'
     }
     if (chapter) {
-        crumbs += CRUMB_SPACER + htmlLink({
-            classKey: 'crumb2',
+        crumbs += '<div id="crumby">' + ICON_CRUMB + htmlLink({
             content: `${titleForBookChapter(books[bookId], chapter)}`
-        })
+        }) + '</div>'
     }
 
     document.getElementById(DIV_BREADCRUMBS).innerHTML = crumbs;
@@ -220,47 +219,72 @@ const setPrevNext = function (bookId, chapter) {
     document.getElementById(DIV_PREVNEXT).style.display = 'flex'
 
     let next = ''
+    let nextName = ''
     let prev = ''
+    let prevName = ''
     
     let book = books[bookId];
     let nextBook = books[bookId + 1];
     if (bookChapterValid(bookId, chapter + 1)) { 
         // just go to the next chapter
         next = `#${book.parentBookId}:${bookId}:${chapter + 1}:next`;
+        nextName = `${book.fullName} ${chapter + 1}`
     } else {
-        // if the next book doesn't exist at incremented id, it's a new volume
-        if (nextBook === undefined) {
-            nextBook = books[`${book.parentBookId}01`]
+        // don't bother with "next" when we're at the last book/chapter
+        if (bookId === 406) {
+            next = ''
+            nextName = ''
+        } else {
+            // if the next book doesn't exist at incremented id, it's a new volume
+            if (nextBook === undefined) {
+                nextBook = books[`${book.parentBookId}01`]
+            }
+            // next book, chap1 (unless there are 0 chapters in next book)   
+            let chapNum = 0
+            nextBook.numChapters === 0 
+                ? chapNum = 0 
+                : chapNum = 1                                    
+            next = `#${nextBook.parentBookId}:${nextBook.id}:${chapNum}:next`
+            nextName = `${titleForBookChapter(nextBook, chapNum)}`
         }
-        // next book, chap1 (unless there are 0 chapters in next book)                                         
-        next = `#${nextBook.parentBookId}:${nextBook.id}:${nextBook.numChapters === 0 ? 0 : 1}:next`
+
     }
 
     let prevBook = books[bookId - 1]
     if (bookChapterValid(bookId, chapter - 1)) {
         // just go to the prev chapter
         prev = `#${book.parentBookId}:${bookId}:${chapter - 1}:prev`;
+        prevName = `${book.fullName} ${chapter - 1}`
     } else {
-        // if incremented id isn't a book, look up the last book id in the prev volume
-        if (prevBook === undefined) {
-            // dict lookup of last bookId of prev volume
-            prevBook = books[BOOKID_SKIPS_PREV[book.id]]
+        // set prev stuff = blank for first chapter in Genesis
+        if (bookId === 101 && chapter === 1) {
+            prev = ''
+            prevName = ''
+        } else {
+            // if incremented id isn't a book, look up the last book id in the prev volume
+            if (prevBook === undefined) {
+            
+                // dict lookup of last bookId of prev volume
+                prevBook = books[BOOKID_SKIPS_PREV[book.id]]
+            }
+            // prev book, numChapters (last chapter)                                        
+            prev = `#${prevBook.parentBookId}:${prevBook.id}:${prevBook.numChapters}:prev`
+            prevName = `${titleForBookChapter(prevBook, prevBook.numChapters)}`
         }
-        // prev book, numChapters (last chapter)                                        
-        prev = `#${prevBook.parentBookId}:${prevBook.id}:${prevBook.numChapters}:prev`
+
     }
 
     document.getElementById(DIV_PREVNEXT).innerHTML = 
     htmlLink({
-        classKey: "",
         id: "prev",
-        content: "< prev",
-        href: `${prev}`
+        ...(prev && {content: ICON_PREV}),
+        href: `${prev}`,
+        title: `${prevName}`,
     }) + htmlLink({
-        classString: "",
         id: "next",
-        content: "next >",
-        href: `${next}`
+        ...(next && {content: ICON_NEXT}),
+        href: `${next}`,
+        title: `${nextName}`,
     });
 }
 
