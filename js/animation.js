@@ -1,9 +1,5 @@
 // constants
 const ANIMATION_DURATION = 350;
-const ANIMATION_TYPE_SLIDE_LEFT = "left";
-const ANIMATION_TYPE_SLIDE_RIGHT = "right";
-const CONTENT_VISIBLE = "scripnav1";
-const CONTENT_UPCOMING = "scripnav2";
 const POSITION_BEHIND_MAP = "100%";
 const POSITION_OFFSCREEN_LEFT = "-100%";
 const POSITION_VISIBLE = "0px";
@@ -15,7 +11,7 @@ let visibleDiv = $("#scripnav1")
 let invisibleDiv = $("#scripnav2")
 
 // helper methods
-const animateToNewChapter = function (content, animationType) {
+const animateToNewContent = function (content, animationType) {
     invisibleDiv.html(content);
 
     if (animationType === "prev") {
@@ -68,4 +64,4 @@ const slideFromLeft = function () {
     visibleDiv.animate({left: POSITION_BEHIND_MAP}, ANIMATION_DURATION, swapDivs());
 };
 
-export { animateToNewChapter, crossfade};
+export { animateToNewContent, crossfade};

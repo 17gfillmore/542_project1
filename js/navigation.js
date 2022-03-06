@@ -1,7 +1,7 @@
 import { setupMarkers } from "./mapHelper.js";
 import { htmlDiv, htmlAnchor, htmlElement, htmlImg, htmlLink } from "./htmlHelper.js";
 import { ajax, books, volumes, encodedScripturesUrlParameters } from "./mapScripApi.js"
-import { animateToNewChapter, crossfade } from "./animation.js";
+import { animateToNewContent, crossfade } from "./animation.js";
 
 // CONSTANTS -----------------------------------------------
 const BOTTOM_PADDING = "<br /><br />";
@@ -16,6 +16,11 @@ const DIV_SCRIPTURES = 'scripnav2'; // this is the invisible div that is then an
 const TAG_HEADERS = "h5";
 const ICON_CRUMB = htmlImg({
     src: "./chevron-right.svg",
+    id: "crumb",
+    alt: "breadcrumb icon"
+});
+const ICON_CRUMB2 = htmlImg({
+    src: "./dash.svg",
     id: "crumb",
     alt: "breadcrumb icon"
 });
@@ -91,7 +96,7 @@ const chaptersGridContent = function (book) {
 
 const getScripturesCallback = function (chapterHtml, animationType) {
     // document.getElementById("scriptures").innerHTML = chapterHtml;
-    animateToNewChapter(chapterHtml, animationType);
+    animateToNewContent(chapterHtml, animationType);
     setupMarkers();
 };
 
@@ -108,7 +113,7 @@ const navigateBook = function(bookId) {
     if (book.numChapters <= 1) { // go straight to the text
         navigateChapter(bookId, book.numChapters);
     } else {        // when navigating to the chapter links view
-        animateToNewChapter(chaptersGrid(book))
+        animateToNewContent(chaptersGrid(book))
     }
     setupMarkers();
 };
@@ -121,13 +126,11 @@ const navigateChapter = function(bookId, chapter, animationType) {
     ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true, animationType);
 };
 
+// covers both "home" (list of all volumes and their books) and the single-volume view
 const navigateHome = function(volumeId) {
-    volumeId 
-        ? setBreadcrumbs(volumeId)
-        : resetElement(DIV_BREADCRUMBS);
+    setBreadcrumbs(volumeId);
     resetElement(DIV_PREVNEXT);
-
-    animateToNewChapter(volumesGridContent(volumeId))
+    animateToNewContent(volumesGridContent(volumeId))
     setupMarkers();
 };
 
@@ -186,21 +189,29 @@ const setBreadcrumbs = function (volumeId, bookId, chapter) {
     let crumbs = '';
     if (volumeId) {
         crumbs = htmlLink({
-            id: "home",
             content: "Home",
             classKey: "crumbLink",
             href: "#"
         })
         crumbs += '<div id="crumby">' + ICON_CRUMB + htmlLink({
-            id: "volume",
             content: `${volumes[volumeId - 1].fullName}`, // volumeId - 1 because the id is inside the array items, and I didn't want to search because they are ordered
-            ...(bookId) && {classKey: "crumbLink"},
-            ...(bookId) && {href: `#${volumeId}`} // only make the crumb a clickable link if we've navigated past it (e.g. are looking at a book)
+            ...(bookId) && {classKey: "crumbLink"}, // only make the crumb a clickable link if we've navigated past it (e.g. are looking at a book)
+            ...(bookId) && {href: `#${volumeId}`} 
         }) + '</div>'
+    } else {
+        volumes.forEach(vol => {
+            crumbs += htmlLink({
+                content: `${vol.fullName}`,
+                classKey: "crumbLink",
+                href: `#${vol.id}`
+            });
+            vol.id < volumes.length
+                ? crumbs += '</div><div id="crumby">' + ICON_CRUMB2
+                : crumbs += '</div>'
+        });
     }
     if (bookId) {
         crumbs += '<div id="crumby">' + ICON_CRUMB + htmlLink({
-            id: 'book',
             content: `${books[bookId].fullName}`,
             ...(chapter) && {classKey: "crumbLink"},
             ...(chapter) && {href: `#${volumeId}:${bookId}`}
@@ -291,7 +302,9 @@ const setPrevNext = function (bookId, chapter) {
 const titleForBookChapter = function (book, chapter) {
     if (book !== undefined) {
         if (chapter > 0) {
-            return `${book.tocName} ${chapter}`
+            return book.tocName === "Sections"
+                ? `Section ${chapter}`
+                : `${book.tocName} ${chapter}`
         }
 
         return book.tocName;

@@ -6,7 +6,7 @@ html {
 
 body {
     color: #222;
-    background-color: rgb(236,226,217);
+    background-color: white;
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -23,7 +23,7 @@ img {
     top: 0;
     left: 0;
     right: 0;
-    background-color: #3f2000;
+    background-color: blue;
     color: white;
     height: 56px;
     display: flex;
@@ -64,20 +64,15 @@ img {
 #mynav {
     font-family: Arial, sans-serif;
     font-weight: normal;
-    color: rgb(37,90,195);
     text-decoration: none;
     padding-left: 1em;
     padding-right: 1em;
+    padding-bottom: 1em;
 }
 
-#mynav a:link, a:visited, a:active {
-    color: rgb(37,90,195);
-    text-decoration: none;
-}
 
-#mynav .crumbLink:hover {
-    text-decoration: underline;
-}
+
+
 
 
 
@@ -159,22 +154,27 @@ div.subtitle {
 }
 
 div.books {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 80px);
+    justify-content: space-evenly;
+    grid-gap: .25em;
     padding: 0 .3em;
     margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+div.books::after {
+    content: '';
+    flex: auto;
 }
 
 div.books a {
     flex: 0 0 7em;
     font-weight: normal;
     margin: .4em;
-    padding-left: .5em;
-    padding-right: .5em;
+    padding: .2em .5em;
     background-color: #fff;
-    color: #222;
+    text-align: center;
 }
 
 div.books a.chapter {
@@ -205,16 +205,6 @@ div.books a.chapter {
     border: solid 5px;
 }
 
-#header a:link, #header a:visited, #header a:active {
-    color: white;
-    text-decoration: none;
-}
-
-#header a:hover {
-    color: #d0d0ff;
-    text-decoration: underline;
-}
-
 div.text {
     padding: 1em;
     font-weight: normal;
@@ -235,11 +225,6 @@ div.text {
 }
 .scripturecontent {
     max-height: 48vh;
-}
-
-.versesblock {
-}
-.versesblock li {
 }
 
 div.chapterheading {
@@ -296,25 +281,24 @@ span.verse {
     text-decoration: underline;
 }
 
-.navheading a:link, .navheading a:visited, .navheading a:active {
-    color: #222;
-    text-decoration: none;
-}
-
-.navheading a:hover {
-    color: #4488ff;
-    text-decoration: underline;
-}
-
-.navheading .nextprev {
-    position: absolute;
-    right: 1em;
-}
-
 li.match {
     background-color: #ffffcc;
 }
 
+
+#crumby {
+    color: rgb(37,90,195);
+}
+#mynav .crumbLink {
+    color: rgb(46,112,244);
+}
+#crumby a:hover {
+    text-decoration: none;
+}
+#mynav .crumbLink:hover {
+    color: rgb(37,90,195);
+    text-decoration: underline;
+}
 
 @media all and (max-width: 600px) {
     #header {
@@ -339,6 +323,7 @@ li.match {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        min-width: 160px;
     }
     #breadcrumbs {
         flex-direction: column;
@@ -356,5 +341,47 @@ li.match {
         min-width: 100%;
         max-width: 95%;
         min-height: 50%;
+    }
+}
+
+a:link, a:visited, a:active {
+    color: rgb(46,112,244);
+    text-decoration: none;
+}
+
+a:hover {
+    color: rgb(37,90,195);
+    text-decoration: underline;
+}
+
+
+@media all and (min-width: 1300px) {
+    #notmap {
+        flex-direction: row;
+        background-color: white;
+        flex: 1 1 40%;
+        min-width: 500px;
+    }
+    #mynav {
+        flex: 1 1 25%;
+        border-right: 1px solid rgb(236,226,217);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-width: 160px;
+    }
+    #breadcrumbs {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    #scriptures {
+        flex: 3 1 75%;
+        border-bottom: 1em solid white;
+        border-top: 1em solid white;
+    }
+    #scriptures ul.versesblock {
+        font-size: 11.5pt;
+    }
+    #map {
     }
 }

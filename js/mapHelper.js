@@ -23,6 +23,10 @@ const clearMarkers = function () {
     gmMarkers.forEach(function (marker) {
         marker.setMap(null);
     });
+    for (let i = 0; i < gmMarkers.length; i++) {
+        gmMarkers.shift()
+    }
+    // document.getElementById("scripturewrapper").innerHTML = '';
 
     gmMarkers = [];
 };
@@ -64,7 +68,18 @@ const setupMarkers = function () {
     gmMarkers.length 
         ? map.fitBounds(bounds) 
         : initMap()
+
+    // listen for bound changes and adjust any too-close zooms (>16)
+    let zoomChangeBoundsListener = 
+        google.maps.event.addListenerOnce(map, 'bounds_changed', function(event) {
+            if ( this.getZoom() > 13 ) { 
+                this.setZoom(13); 
+            }
+        });
+    setTimeout(function(){google.maps.event.removeListener(zoomChangeBoundsListener)}, 2000);
 };
+
+
 
 const showLocation = function (id, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {
     map.panTo({lat: latitude, lng: longitude});
