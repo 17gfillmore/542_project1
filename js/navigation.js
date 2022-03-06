@@ -94,6 +94,16 @@ const chaptersGridContent = function (book) {
     return gridContent;
 };
 
+const getScreenSize = function () {
+    if (window.matchMedia("(max-width: 600px").matches) {
+        return "xsmall";
+    } else if (window.matchMedia("(max-width: 800px").matches) {
+        return 'small';
+    } else if (window.matchMedia("(min-width: 801px").matches) {
+        return 'fullSize';
+    }
+}
+
 const getScripturesCallback = function (chapterHtml, animationType) {
     // document.getElementById("scriptures").innerHTML = chapterHtml;
     animateToNewContent(chapterHtml, animationType);
@@ -227,77 +237,119 @@ const setBreadcrumbs = function (volumeId, bookId, chapter) {
 }
 
 const setPrevNext = function (bookId, chapter) {
+    // the display is set to "none" to clear the empty space, so just resetting it
     document.getElementById(DIV_PREVNEXT).style.display = 'flex'
-
-    let next = ''
-    let nextName = ''
-    let prev = ''
-    let prevName = ''
     
     let book = books[bookId];
-    let nextBook = books[bookId + 1];
+
+    let nextBook;
+    let nextChapter;
+    let nextHash;
     if (bookChapterValid(bookId, chapter + 1)) { 
-        // just go to the next chapter
-        next = `#${book.parentBookId}:${bookId}:${chapter + 1}:next`;
-        nextName = `${book.fullName} ${chapter + 1}`
+        // same book, next chapter
+        [nextBook, nextChapter] = [book, chapter + 1];
+        nextHash = `#${book.parentBookId}:${bookId}:${nextChapter}:next`;
     } else {
         // don't bother with "next" when we're at the last book/chapter
         if (bookId === 406) {
-            next = ''
-            nextName = ''
+            nextBook = null;
         } else {
-            // if the next book doesn't exist at incremented id, it's a new volume
-            if (nextBook === undefined) {
-                nextBook = books[`${book.parentBookId}01`]
-            }
-            // next book, chap1 (unless there are 0 chapters in next book)   
-            let chapNum = 0
-            nextBook.numChapters === 0 
-                ? chapNum = 0 
-                : chapNum = 1                                    
-            next = `#${nextBook.parentBookId}:${nextBook.id}:${chapNum}:next`
-            nextName = `${titleForBookChapter(nextBook, chapNum)}`
+            // if a book doesn't exist at the next bookid, it's the first book in a new volume. else, just next book
+            books[bookId + 1] === undefined
+                ? nextBook = books[`${book.parentBookId}01`]
+                : nextBook = books[bookId + 1]
         }
-
+        // next chapter of the new book/volume is 1 (unless there are 0 chapters in it)
+        nextBook.numChapters === 0
+            ? nextChapter = 0
+            : nextChapter = 1
+        nextHash = `#${nextBook.parentBookId}:${nextBook.id}:${nextChapter}:next`
     }
 
-    let prevBook = books[bookId - 1]
+    let prevBook;
+    let prevChapter;
+    let prevHash;
     if (bookChapterValid(bookId, chapter - 1)) {
-        // just go to the prev chapter
-        prev = `#${book.parentBookId}:${bookId}:${chapter - 1}:prev`;
-        prevName = `${book.fullName} ${chapter - 1}`
-    } else {
-        // set prev stuff = blank for first chapter in Genesis
+        // same book, previous chapter
+        [prevBook, prevChapter] = [book, chapter - 1]
+        prevHash = `#${book.parentBookId}:${bookId}:${prevChapter}:prev`;
+    } else { // previous book, so need to find chapter
+        // don't bother with "prev" when we're at the first book/chapter
         if (bookId === 101 && chapter === 1) {
-            prev = ''
-            prevName = ''
+            prevBook = null;
         } else {
-            // if incremented id isn't a book, look up the last book id in the prev volume
-            if (prevBook === undefined) {
-            
-                // dict lookup of last bookId of prev volume
-                prevBook = books[BOOKID_SKIPS_PREV[book.id]]
-            }
-            // prev book, numChapters (last chapter)                                        
-            prev = `#${prevBook.parentBookId}:${prevBook.id}:${prevBook.numChapters}:prev`
-            prevName = `${titleForBookChapter(prevBook, prevBook.numChapters)}`
+            // if incremented id isn't a book, look up the last book id in the prev volume. Otherwise, just go back a 
+            // book in the same volume. 
+            books[bookId - 1] === undefined
+                ? prevBook = books[BOOKID_SKIPS_PREV[bookId]]   // bookid_skips_prev has the first book in a volume as the key 
+                                                                // and the last (of the previous volume) as the value
+                : prevBook = books[bookId - 1]
+
+            prevChapter = prevBook.numChapters
+            prevHash = `#${prevBook.parentBookId}:${prevBook.id}:${prevChapter}:prev`
         }
 
     }
 
-    document.getElementById(DIV_PREVNEXT).innerHTML = 
-    htmlLink({
+
+    // set content for links based on screen size (just icon, icon and short name, icon and full name)
+    let nextLinkContent = '';
+    let prevLinkContent = '';
+    let screenSize = getScreenSize();
+    if (!nextBook) {
+        nextLinkContent = '';
+    } else {
+        if (screenSize === 'xsmall') {
+            nextLinkContent = ICON_NEXT
+        } else if (screenSize === 'small') {
+            nextChapter === 0
+                ? nextLinkContent = `${nextBook.citeAbbr} ${ICON_NEXT}`
+                : nextLinkContent = `${nextBook.citeAbbr} ${nextChapter} ${ICON_NEXT}`
+        } else if (screenSize === 'fullSize') {
+            nextChapter === 0
+                ? nextLinkContent = `${nextBook.fullName} ${ICON_NEXT}`
+                : nextLinkContent = `${nextBook.fullName} ${nextChapter} ${ICON_NEXT}`
+        }
+        nextLinkContent = htmlDiv({
+            id: 'crumby',
+            content: nextLinkContent
+        })
+    }
+    if (!prevBook) {
+        prevLinkContent = '';
+    } else {
+        if (screenSize === 'xsmall') {
+            prevLinkContent = ICON_PREV
+        } else if (screenSize === 'small') {
+            prevChapter === 0
+                ? prevLinkContent = `${ICON_PREV} ${nextBook.citeAbbr}`
+                : prevLinkContent = `${ICON_PREV} ${prevBook.citeAbbr} ${prevChapter}`
+        } else if (screenSize === 'fullSize') {
+            prevChapter === 0
+                ? prevLinkContent = `${ICON_PREV} ${nextBook.fullName}`
+                : prevLinkContent = `${ICON_PREV} ${prevBook.fullName} ${prevChapter}`
+        }
+        prevLinkContent = htmlDiv({
+            id: 'crumby',
+            content: prevLinkContent
+        })
+    }
+
+    // create and set actual link elements
+    document.getElementById(DIV_PREVNEXT).innerHTML = htmlLink({
         id: "prev",
-        ...(prev && {content: ICON_PREV}),
-        href: `${prev}`,
-        title: `${prevName}`,
+        // content: prevChapter,
+        content: prevLinkContent,
+        href: prevHash,
+        // title: `${prevName}`,
     }) + htmlLink({
         id: "next",
-        ...(next && {content: ICON_NEXT}),
-        href: `${next}`,
-        title: `${nextName}`,
+        // content: nextChapter,
+        content: nextLinkContent,
+        href: nextHash,
+        // title: `${nextName}`,
     });
-}
+};
 
 const titleForBookChapter = function (book, chapter) {
     if (book !== undefined) {

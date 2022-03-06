@@ -1,5 +1,5 @@
 html {
-    width: 100%;
+    /* width: 100%; */
     height: 100%;
     overflow: hidden;
 }
@@ -47,14 +47,14 @@ img {
 }
 
 #map {
-    flex: 1 1 70%;
+    flex: 1 2 60%;
 }
 
 #notmap {
     min-width: 300px;
     max-width: 440px;
     border-right: 1px solid #aaa;
-    flex: 1 1 30%;
+    flex: 2 1 40%;
     overflow: auto;
     height: 100%;
     display: flex;
@@ -67,7 +67,6 @@ img {
     text-decoration: none;
     padding-left: 1em;
     padding-right: 1em;
-    padding-bottom: 1em;
 }
 
 
@@ -87,7 +86,7 @@ img {
     overflow-x: hidden;
     overflow-y: auto;
     position: relative;
-
+    padding-top: 1em;
 }
 
 #scripnav1, #scripnav2 { 
@@ -139,10 +138,15 @@ div.subtitle {
 }
 
 #prevnext {
+    flex-direction: row;
     padding-bottom: .8em;
-    justify-content: right;
+    justify-content: space-between;
     text-align: center;
 
+}
+
+#prevnext a {
+    display: inline;
 }
 
 
@@ -223,15 +227,13 @@ div.text {
     background-color: white;
     /* padding-bottom: 3rem; */
 }
-.scripturecontent {
-    max-height: 48vh;
-}
 
 div.chapterheading {
     font-size: 14pt;
     font-weight: bold;
     padding: .5em;
     text-align: center;
+    margin-bottom: 1em;
 }
 
 div.chapterheading b.big {
@@ -301,6 +303,15 @@ li.match {
 }
 
 @media all and (max-width: 600px) {
+    @media all and (max-width: 500px) {
+        #mynav {
+            font-size: 11px;
+        }
+        #prevnext {
+            justify-content: space-between;
+        }
+
+    }
     #header {
         display: none;
     }
@@ -318,21 +329,23 @@ li.match {
         border-right: none;
     }
     #mynav {
-        flex: 1 1 25%;
+        order: -1;
+        flex: 1 2 25%;
         border-right: 1px solid rgb(236,226,217);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        min-width: 160px;
+        min-width: fit-content;
     }
     #breadcrumbs {
         flex-direction: column;
         align-items: flex-start;
     }
     #scriptures {
-        flex: 1 1 75%;
-        border-bottom: 1em solid white;
-        border-top: 1em solid white;
+        flex: 2 1 75%;
+        border-bottom: .8em solid white;
+        border-top: .8em solid white;
+        padding-top: 0;
     }
     #scriptures ul.versesblock {
         font-size: 11.5pt;

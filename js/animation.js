@@ -7,8 +7,8 @@ const OPAQUE = 1;
 const TRANSPARENT = 0;
 
 // private variables
-let visibleDiv = $("#scripnav1")
-let invisibleDiv = $("#scripnav2")
+let visibleDiv = $("#scripnav1");
+let invisibleDiv = $("#scripnav2");
 
 // helper methods
 const animateToNewContent = function (content, animationType) {
@@ -46,17 +46,16 @@ const crossfade = function () {
 };
 
 const slideFromRight = function () {
-    // make sure offscreen/invisibile div is in the right spot
+    // make sure offscreen/invisible div is in the right spot
     invisibleDiv.css({left: POSITION_BEHIND_MAP, opacity: OPAQUE});
 
     // then run the animation
     invisibleDiv.animate({left: POSITION_VISIBLE}, ANIMATION_DURATION);
     visibleDiv.animate({left: POSITION_OFFSCREEN_LEFT}, ANIMATION_DURATION, swapDivs());
-    
 };
 
 const slideFromLeft = function () {
-    // make sure offscreen/invisibile div is in the right spot
+    // make sure offscreen/invisible div is in the right spot
     invisibleDiv.css({left: POSITION_OFFSCREEN_LEFT, opacity: OPAQUE});
 
     // then run the animation
@@ -64,4 +63,4 @@ const slideFromLeft = function () {
     visibleDiv.animate({left: POSITION_BEHIND_MAP}, ANIMATION_DURATION, swapDivs());
 };
 
-export { animateToNewContent, crossfade};
+export { animateToNewContent, crossfade };
