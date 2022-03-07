@@ -7,11 +7,14 @@ const OPAQUE = 1;
 const TRANSPARENT = 0;
 
 // private variables
-let visibleDiv = $("#scripnav1");
-let invisibleDiv = $("#scripnav2");
+let visibleDiv;
+let invisibleDiv;
 
 // helper methods
 const animateToNewContent = function (content, animationType) {
+    visibleDiv = $("#scripnav1");
+    invisibleDiv = $("#scripnav2");
+
     invisibleDiv.html(content);
 
     if (animationType === "prev") {
@@ -22,6 +25,19 @@ const animateToNewContent = function (content, animationType) {
         crossfade();
     }
 };
+
+const animateToNewNav = function (content, navType) {
+    if (navType === "breadcrumbs") {
+        visibleDiv = $("#breadcrumbs1");
+        invisibleDiv = $("#breadcrumbs2");
+    } else {
+        visibleDiv = $("#prevnext1");
+        invisibleDiv = $("#prevnext1");
+    }
+
+    invisibleDiv.html(content);
+    crossfade();
+}
 
 const swapDivs = function () {
     let temp = visibleDiv;
@@ -63,4 +79,4 @@ const slideFromLeft = function () {
     visibleDiv.animate({left: POSITION_BEHIND_MAP}, ANIMATION_DURATION, swapDivs());
 };
 
-export { animateToNewContent, crossfade };
+export { animateToNewContent, animateToNewNav };

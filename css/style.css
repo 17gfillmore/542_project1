@@ -18,18 +18,21 @@ img {
     max-width: 100%;
 }
 
-#header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    background-color: blue;
+.header {
+    background-color: rgb(0, 72, 136);
     color: white;
-    height: 56px;
     display: flex;
     flex-direction: row;
     box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
     align-items: center;
+}
+
+#fixed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
     z-index: 10000;
 }
 
@@ -55,14 +58,14 @@ img {
     max-width: 440px;
     border-right: 1px solid #aaa;
     flex: 2 1 40%;
-    overflow: auto;
+    overflow: hidden;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
 #mynav {
-    min-height: 110px;
+    min-height: 120px;
     font-family: Arial, sans-serif;
     font-weight: normal;
     text-decoration: none;
@@ -70,9 +73,13 @@ img {
     padding-right: 1em;
 }
 
-#breadcrumbs {
+#mobile {
+    display: none;
+}
+
+#breadcrumbs1, #breadcrumbs2 {
     white-space: nowrap;
-    padding: 1em 0;
+    padding: .5em .8em;
     justify-content: left;
     display: flex;
     flex-flow: column wrap;
@@ -110,6 +117,10 @@ img {
     font-weight: normal;
 }
 
+#prevnext, #breadcrumbs {
+    position: relative
+}
+
 #scriptures {
     flex-grow: 1;
     overflow-x: hidden;
@@ -118,7 +129,9 @@ img {
     padding-top: 1em;
 }
 
-#scripnav1, #scripnav2 { 
+#scripnav1, #scripnav2, #breadcrumbs1, #breadcrumbs2, #prevnext1, #prevnext2 { 
+    top: 0;
+    left: 0;
     position: absolute;
     min-height: 100%;
     overflow-x: hidden;
@@ -143,7 +156,6 @@ div.title {
 
 div.subtitle {
     display: block;
-    font-size: smaller;
 }
 
 #about {
@@ -327,18 +339,29 @@ a:hover {
 
 /* SMALL AND SMALLEST SCREENS */
 @media all and (max-width: 600px) {
+    #mynav {
+        flex: 1 2 25%;
+        border-right: 1px solid rgb(236,226,217);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        min-width: 185px;
+        padding: 0;
+    }
+
     @media all and (max-width: 500px) {
         #mynav {
             font-size: 11px;
+            min-width: 155px;
         }
-        #prevnext {
+        #prevnext{
             justify-content: space-between;
         }
         #crumby {
             padding: .4em 0;
         }
     }
-    #header {
+    #fixed {
         display: none;
     }
     #content {
@@ -354,16 +377,20 @@ a:hover {
         background-color: white;
         border-right: none;
     }
-    #mynav {
-        flex: 1 2 25%;
-        border-right: 1px solid rgb(236,226,217);
+
+    #mobile {
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        min-width: fit-content;
-    }
+        padding: 1em 1.3em;
+        font-family: Georgia, 'Times New Roman', Times, serif;
+}
     #breadcrumbs {
         align-items: flex-start;
+        padding: .5em .8em;
+    }
+    #prevnext {
+        justify-self: flex-end;
+        padding: .5em .8em;
+        margin-top: auto;
     }
     #scriptures {
         flex: 2 1 75%;
@@ -419,6 +446,11 @@ a:hover {
     #breadcrumbs {
         align-items: flex-start;
         padding-top: 1.5em;
+    }
+    #breadcrumbs2 {
+        padding-top: 1.5em;
+        padding-left: 0em;
+        min-width: 158px;
     }
     #prevnext {
         align-self: flex-start;

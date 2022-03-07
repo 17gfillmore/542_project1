@@ -1,7 +1,7 @@
 import { setupMarkers } from "./mapHelper.js";
 import { htmlDiv, htmlAnchor, htmlElement, htmlImg, htmlLink } from "./htmlHelper.js";
 import { ajax, books, volumes, encodedScripturesUrlParameters } from "./mapScripApi.js"
-import { animateToNewContent, crossfade } from "./animation.js";
+import { animateToNewContent, animateToNewNav } from "./animation.js";
 
 // CONSTANTS -----------------------------------------------
 const BOTTOM_PADDING = "<br /><br />";
@@ -237,7 +237,8 @@ const setBreadcrumbs = function (volumeId, bookId, chapter) {
         }) + '</div>'
     }
 
-    document.getElementById(DIV_BREADCRUMBS).innerHTML = crumbs;
+    animateToNewNav(crumbs, DIV_BREADCRUMBS)
+    // document.getElementById(DIV_BREADCRUMBS).innerHTML = crumbs;
 }
 
 const setPrevNext = function (bookId, chapter) {
@@ -357,7 +358,7 @@ const setPrevNext = function (bookId, chapter) {
         })
 
     // create and set actual link elements
-    document.getElementById(DIV_PREVNEXT).innerHTML = htmlLink({
+    let prevnextNavContent = htmlLink({
         classKey: "crumbLink",
         content: prevLinkContent,
         href: prevHash,
@@ -368,6 +369,7 @@ const setPrevNext = function (bookId, chapter) {
         href: nextHash,
         // title: `${nextName}`,
     });
+    document.getElementById(DIV_PREVNEXT).innerHTML = prevnextNavContent;
 };
 
 const titleForBookChapter = function (book, chapter) {
