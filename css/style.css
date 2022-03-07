@@ -51,7 +51,7 @@ img {
 }
 
 #notmap {
-    min-width: 300px;
+    min-width: 270px;
     max-width: 440px;
     border-right: 1px solid #aaa;
     flex: 2 1 40%;
@@ -62,6 +62,7 @@ img {
 }
 
 #mynav {
+    min-height: 110px;
     font-family: Arial, sans-serif;
     font-weight: normal;
     text-decoration: none;
@@ -69,16 +70,44 @@ img {
     padding-right: 1em;
 }
 
+#breadcrumbs {
+    white-space: nowrap;
+    padding: 1em 0;
+    justify-content: left;
+    display: flex;
+    flex-flow: column wrap;
+}
 
+#prevnext {
+    flex-direction: row;
+    padding-bottom: .8em;
+    justify-content: space-between;
+    text-align: center;
+    font-weight: normal;
+}
 
+/* just the icon */
+#crumb #crumb2{
+    height: 1em;
+    padding-left: .4em;
+    padding-right: .4em;
+}
 
-
-
-
+/* div containing both an icon and a text link */
 #crumby {
     display: flex;
     align-items: center;
     padding: .2em 0;
+    font-weight: bold;
+}
+
+.crumbLink {
+    font-weight: normal;
+}
+
+/* need to specify this bc I the prevnext text is inside the crumby div */
+.crumbLink #crumby {
+    font-weight: normal;
 }
 
 #scriptures {
@@ -95,12 +124,6 @@ img {
     overflow-x: hidden;
     overflow-y: auto;
     width: 100%;
-}
-
-.crumb {
-    height: 1em;
-    padding-left: .4em;
-    padding-right: .4em;
 }
 
 #centerhead {
@@ -128,40 +151,23 @@ div.subtitle {
     padding: .5em;
 }
 
-#breadcrumbs {
-    white-space: nowrap;
-    padding-top: 1em;
-    justify-content: left;
-    display: flex;
-    flex-flow: row wrap;
-    align-items: center;
-}
-
-#prevnext {
-    flex-direction: row;
-    padding-bottom: .8em;
-    justify-content: space-between;
-    text-align: center;
-
-}
-
-#prevnext a {
-    display: inline;
-}
-
-
 .volume {
     padding: .5em;
     font-size: 12pt;
     font-weight: bold;
     text-align: center;
+
+}
+
+.volume a:hover{
+    text-decoration: none;
+    color: inherit;
 }
 
 div.books {
     display: grid;
     grid-template-columns: repeat(auto-fill, 80px);
-    justify-content: space-evenly;
-    grid-gap: .25em;
+    justify-content: center;
     padding: 0 .3em;
     margin: 0;
     font-family: Arial, Helvetica, sans-serif;
@@ -176,9 +182,17 @@ div.books a {
     flex: 0 0 7em;
     font-weight: normal;
     margin: .4em;
-    padding: .2em .5em;
+    padding: .35em .5em;
     background-color: #fff;
     text-align: center;
+    border: solid 1px lightgray;
+    border-radius: .2em;
+}
+
+div.books a:hover {
+    border: solid 1px rgb(170, 170, 170);
+    background-color: lightgray;
+    text-decoration: none;
 }
 
 div.books a.chapter {
@@ -287,7 +301,6 @@ li.match {
     background-color: #ffffcc;
 }
 
-
 #crumby {
     color: rgb(37,90,195);
 }
@@ -302,6 +315,17 @@ li.match {
     text-decoration: underline;
 }
 
+a:link, a:visited, a:active {
+    color: rgb(46,112,244);
+    text-decoration: none;
+}
+
+a:hover {
+    color: rgb(37,90,195);
+    text-decoration: underline;
+}
+
+/* SMALL AND SMALLEST SCREENS */
 @media all and (max-width: 600px) {
     @media all and (max-width: 500px) {
         #mynav {
@@ -310,7 +334,9 @@ li.match {
         #prevnext {
             justify-content: space-between;
         }
-
+        #crumby {
+            padding: .4em 0;
+        }
     }
     #header {
         display: none;
@@ -329,7 +355,6 @@ li.match {
         border-right: none;
     }
     #mynav {
-        order: -1;
         flex: 1 2 25%;
         border-right: 1px solid rgb(236,226,217);
         display: flex;
@@ -338,7 +363,6 @@ li.match {
         min-width: fit-content;
     }
     #breadcrumbs {
-        flex-direction: column;
         align-items: flex-start;
     }
     #scriptures {
@@ -357,35 +381,53 @@ li.match {
     }
 }
 
-a:link, a:visited, a:active {
-    color: rgb(46,112,244);
-    text-decoration: none;
+/* MEDIUM/DEFAULT VIEW ------------*/
+@media all and (min-width: 601px) and (max-width: 1299px) {
+    #mynav {
+        order: 1;
+        display: flex;
+        flex-direction: row;
+    }
+    #prevnext {
+        flex: 1 1 20%;
+        padding-bottom: 0;
+        padding-top: .8em;
+        justify-content: space-evenly;
+    }
+    #breadcrumbs {
+        flex: 1 1 80%;
+    }
 }
 
-a:hover {
-    color: rgb(37,90,195);
-    text-decoration: underline;
-}
-
-
+/* LARGEST ------------------- */
 @media all and (min-width: 1300px) {
     #notmap {
         flex-direction: row;
         background-color: white;
         flex: 1 1 40%;
-        min-width: 500px;
+        min-width: 600px;
     }
     #mynav {
         flex: 1 1 25%;
         border-right: 1px solid rgb(236,226,217);
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        min-width: 180px;
         justify-content: space-between;
-        min-width: 160px;
+        padding-right: 0;
     }
     #breadcrumbs {
-        flex-direction: column;
         align-items: flex-start;
+        padding-top: 1.5em;
+    }
+    #prevnext {
+        align-self: flex-start;
+        flex: 1 1 45px;
+        justify-content: space-between;
+        padding-top: 1em;
+        min-width: 45px;
+        max-width: 45px;
+        padding-right: .8em;
     }
     #scriptures {
         flex: 3 1 75%;
@@ -395,6 +437,7 @@ a:hover {
     #scriptures ul.versesblock {
         font-size: 11.5pt;
     }
-    #map {
+    .crumbLink #crumby img {
+        min-height: 1.5em;
     }
 }

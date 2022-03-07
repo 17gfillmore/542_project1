@@ -21,7 +21,7 @@ const ICON_CRUMB = htmlImg({
 });
 const ICON_CRUMB2 = htmlImg({
     src: "./dash.svg",
-    id: "crumb",
+    id: "crumb2",
     alt: "breadcrumb icon"
 });
 const ICON_NEXT = htmlImg({
@@ -98,10 +98,17 @@ const getScreenSize = function () {
     if (window.matchMedia("(max-width: 600px").matches) {
         return "xsmall";
     } else if (window.matchMedia("(max-width: 800px").matches) {
+        return "xsmall";
+        // return 'small'; //design change hah
+    } else if (window.matchMedia("(max-width: 1299px").matches) {
+        return "xsmall";
+        // return 'fullSize';
+    } else {
+        // at 1300px, the nav bar goes to the side again, so 
+        // use a shorter button name again
         return 'small';
-    } else if (window.matchMedia("(min-width: 801px").matches) {
-        return 'fullSize';
     }
+
 }
 
 const getScripturesCallback = function (chapterHtml, animationType) {
@@ -198,11 +205,11 @@ const setBreadcrumbs = function (volumeId, bookId, chapter) {
 
     let crumbs = '';
     if (volumeId) {
-        crumbs = htmlLink({
+        crumbs = '<div id="crumby">' + htmlLink({
             content: "Home",
             classKey: "crumbLink",
             href: "#"
-        })
+        }) + "</div>"
         crumbs += '<div id="crumby">' + ICON_CRUMB + htmlLink({
             content: `${volumes[volumeId - 1].fullName}`, // volumeId - 1 because the id is inside the array items, and I didn't want to search because they are ordered
             ...(bookId) && {classKey: "crumbLink"}, // only make the crumb a clickable link if we've navigated past it (e.g. are looking at a book)
@@ -210,14 +217,11 @@ const setBreadcrumbs = function (volumeId, bookId, chapter) {
         }) + '</div>'
     } else {
         volumes.forEach(vol => {
-            crumbs += htmlLink({
+            crumbs += '<div id="crumby">' + ICON_CRUMB2 + htmlLink({
                 content: `${vol.fullName}`,
                 classKey: "crumbLink",
                 href: `#${vol.id}`
-            });
-            vol.id < volumes.length
-                ? crumbs += '</div><div id="crumby">' + ICON_CRUMB2
-                : crumbs += '</div>'
+            }) + '</div>';
         });
     }
     if (bookId) {
@@ -253,17 +257,20 @@ const setPrevNext = function (bookId, chapter) {
         // don't bother with "next" when we're at the last book/chapter
         if (bookId === 406) {
             nextBook = null;
+            nextHash = '';
         } else {
             // if a book doesn't exist at the next bookid, it's the first book in a new volume. else, just next book
             books[bookId + 1] === undefined
                 ? nextBook = books[`${book.parentBookId}01`]
                 : nextBook = books[bookId + 1]
+
+            // next chapter of the new book/volume is 1 (unless there are 0 chapters in it)
+            nextBook.numChapters === 0
+                ? nextChapter = 0
+                : nextChapter = 1
+            nextHash = `#${nextBook.parentBookId}:${nextBook.id}:${nextChapter}:next`
         }
-        // next chapter of the new book/volume is 1 (unless there are 0 chapters in it)
-        nextBook.numChapters === 0
-            ? nextChapter = 0
-            : nextChapter = 1
-        nextHash = `#${nextBook.parentBookId}:${nextBook.id}:${nextChapter}:next`
+
     }
 
     let prevBook;
@@ -277,6 +284,7 @@ const setPrevNext = function (bookId, chapter) {
         // don't bother with "prev" when we're at the first book/chapter
         if (bookId === 101 && chapter === 1) {
             prevBook = null;
+            prevHash = '';
         } else {
             // if incremented id isn't a book, look up the last book id in the prev volume. Otherwise, just go back a 
             // book in the same volume. 
@@ -291,60 +299,71 @@ const setPrevNext = function (bookId, chapter) {
 
     }
 
-
-    // set content for links based on screen size (just icon, icon and short name, icon and full name)
     let nextLinkContent = '';
     let prevLinkContent = '';
-    let screenSize = getScreenSize();
-    if (!nextBook) {
-        nextLinkContent = '';
-    } else {
-        if (screenSize === 'xsmall') {
-            nextLinkContent = ICON_NEXT
-        } else if (screenSize === 'small') {
-            nextChapter === 0
-                ? nextLinkContent = `${nextBook.citeAbbr} ${ICON_NEXT}`
-                : nextLinkContent = `${nextBook.citeAbbr} ${nextChapter} ${ICON_NEXT}`
-        } else if (screenSize === 'fullSize') {
-            nextChapter === 0
-                ? nextLinkContent = `${nextBook.fullName} ${ICON_NEXT}`
-                : nextLinkContent = `${nextBook.fullName} ${nextChapter} ${ICON_NEXT}`
-        }
-        nextLinkContent = htmlDiv({
+    // changed my mind about the design... I like it with just the icons smooshed up by the text
+    // // set content for links based on screen size (just icon, icon and short name, icon and full name)
+    // let screenSize = getScreenSize();
+    // if (!nextBook) {
+    //     nextLinkContent = '';
+    // } else {
+    //     if (screenSize === 'xsmall') {
+    //         nextLinkContent = ICON_NEXT
+    //     } else if (screenSize === 'small') {
+    //         nextChapter === 0
+    //             ? nextLinkContent = `${nextBook.citeAbbr} ${ICON_NEXT}`
+    //             : nextLinkContent = `${nextBook.citeAbbr} ${nextChapter} ${ICON_NEXT}`
+    //     } else if (screenSize === 'fullSize') {
+    //         nextChapter === 0
+    //             ? nextLinkContent = `${nextBook.fullName} ${ICON_NEXT}`
+    //             : nextLinkContent = `${nextBook.fullName} ${nextChapter} ${ICON_NEXT}`
+    //     }
+    //     nextLinkContent = htmlDiv({
+    //         id: 'crumby',
+    //         content: nextLinkContent
+    //     })
+    // }
+    // if (!prevBook) {
+    //     prevLinkContent = '';
+    // } else {
+    //     if (screenSize === 'xsmall') {
+    //         prevLinkContent = ICON_PREV
+    //     } else if (screenSize === 'small') {
+    //         prevChapter === 0
+    //             ? prevLinkContent = `${ICON_PREV} ${nextBook.citeAbbr}`
+    //             : prevLinkContent = `${ICON_PREV} ${prevBook.citeAbbr} ${prevChapter}`
+    //     } else if (screenSize === 'fullSize') {
+    //         prevChapter === 0
+    //             ? prevLinkContent = `${ICON_PREV} ${nextBook.fullName}`
+    //             : prevLinkContent = `${ICON_PREV} ${prevBook.fullName} ${prevChapter}`
+    //     }
+    //     prevLinkContent = htmlDiv({
+    //         id: 'crumby',
+    //         content: prevLinkContent
+    //     })
+    // }
+
+    !nextBook
+        ? nextLinkContent = ''
+        : nextLinkContent = htmlDiv({
             id: 'crumby',
-            content: nextLinkContent
+            content: ICON_NEXT
         })
-    }
-    if (!prevBook) {
-        prevLinkContent = '';
-    } else {
-        if (screenSize === 'xsmall') {
-            prevLinkContent = ICON_PREV
-        } else if (screenSize === 'small') {
-            prevChapter === 0
-                ? prevLinkContent = `${ICON_PREV} ${nextBook.citeAbbr}`
-                : prevLinkContent = `${ICON_PREV} ${prevBook.citeAbbr} ${prevChapter}`
-        } else if (screenSize === 'fullSize') {
-            prevChapter === 0
-                ? prevLinkContent = `${ICON_PREV} ${nextBook.fullName}`
-                : prevLinkContent = `${ICON_PREV} ${prevBook.fullName} ${prevChapter}`
-        }
-        prevLinkContent = htmlDiv({
+    !prevBook
+        ? prevLinkContent = ''
+        : prevLinkContent = htmlDiv({
             id: 'crumby',
-            content: prevLinkContent
+            content: ICON_PREV
         })
-    }
 
     // create and set actual link elements
     document.getElementById(DIV_PREVNEXT).innerHTML = htmlLink({
-        id: "prev",
-        // content: prevChapter,
+        classKey: "crumbLink",
         content: prevLinkContent,
         href: prevHash,
         // title: `${prevName}`,
     }) + htmlLink({
-        id: "next",
-        // content: nextChapter,
+        classKey: "crumbLink",
         content: nextLinkContent,
         href: nextHash,
         // title: `${nextName}`,
