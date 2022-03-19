@@ -1,15 +1,15 @@
 html {
-    width: 100%;
+    /* width: 100%; */
     height: 100%;
     overflow: hidden;
 }
 
 body {
     color: #222;
-    background-color: rgb(236,226,217);
+    background-color: white;
     margin: 0;
     padding: 0;
-    min-height: 100%;
+    min-height: 100vh;
     font-weight: bold;
     font-size: 10pt;
 }
@@ -18,19 +18,22 @@ img {
     max-width: 100%;
 }
 
-#header {
+.header {
+    background-color: rgb(0, 72, 136);
+    color: white;
+    display: flex;
+    flex-direction: row;
+    box-shadow: -6px 5px 17px 4px rgba(0, 0, 0, 0.4);
+    align-items: center;
+    z-index: 100;
+}
+
+#fixed {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    background-color: #3f2000;
-    color: white;
     height: 56px;
-    display: flex;
-    flex-direction: row;
-    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
-    align-items: center;
-    z-index: 10000;
 }
 
 #content {
@@ -46,9 +49,95 @@ img {
     align-content: stretch;
 }
 
-#crumb {
-    padding-left: 1.25em;
-    order: -1;
+#map {
+    flex: 1 2 60%;
+}
+
+#notmap {
+    min-width: 270px;
+    max-width: 440px;
+    border-right: 1px solid #aaa;
+    flex: 2 1 40%;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-top: .8em;
+}
+
+#mynav {
+    min-height: 120px;
+    font-family: Arial, sans-serif;
+    font-weight: normal;
+    text-decoration: none;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+#mobile {
+    display: none;
+}
+
+#breadcrumbs1, #breadcrumbs2 {
+    white-space: nowrap;
+    padding: .5em .8em;
+    justify-content: left;
+    display: flex;
+    flex-flow: column wrap;
+}
+
+#prevnext {
+    flex-direction: row;
+    padding-bottom: .8em;
+    justify-content: space-between;
+    text-align: center;
+    font-weight: normal;
+}
+
+/* just the icon */
+#crumb #crumb2{
+    height: 1em;
+    padding-left: .4em;
+    padding-right: .4em;
+}
+
+/* div containing both an icon and a text link */
+#crumby {
+    display: flex;
+    align-items: center;
+    padding: .2em 0;
+    font-weight: bold;
+}
+
+.crumbLink {
+    font-weight: normal;
+}
+
+/* need to specify this bc I the prevnext text is inside the crumby div */
+.crumbLink #crumby {
+    font-weight: normal;
+}
+
+#prevnext, #breadcrumbs {
+    position: relative
+}
+
+#scriptures {
+    flex-grow: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+    padding-top: 1em;
+}
+
+#scripnav1, #scripnav2, #breadcrumbs1, #breadcrumbs2, #prevnext1, #prevnext2 { 
+    top: 0;
+    left: 0;
+    position: absolute;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 100%;
 }
 
 #centerhead {
@@ -68,7 +157,6 @@ div.title {
 
 div.subtitle {
     display: block;
-    font-size: smaller;
 }
 
 #about {
@@ -76,52 +164,48 @@ div.subtitle {
     padding: .5em;
 }
 
-#scriptures {
-    min-width: 220px;
-    max-width: 440px;
-    flex: 1 1 30%;
-    height: 100%;
-    min-height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    border-right: 1px solid #aaa;
-    position: relative;
-}
-
-#scripnav {
-    position: absolute;
-    max-height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    width: 100%;
-}
-
-#map {
-    flex: 1 1 70%;
-}
-
 .volume {
     padding: .5em;
     font-size: 12pt;
+    font-weight: bold;
+    text-align: center;
+
+}
+
+.volume a:hover{
+    text-decoration: none;
+    color: inherit;
 }
 
 div.books {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 80px);
     justify-content: center;
     padding: 0 .3em;
     margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+div.books::after {
+    content: '';
+    flex: auto;
 }
 
 div.books a {
     flex: 0 0 7em;
     font-weight: normal;
     margin: .4em;
-    padding-left: .5em;
-    padding-right: .5em;
+    padding: .35em .5em;
     background-color: #fff;
-    color: #222;
+    text-align: center;
+    border: solid 1px lightgray;
+    border-radius: .2em;
+}
+
+div.books a:hover {
+    border: solid 1px rgb(170, 170, 170);
+    background-color: lightgray;
+    text-decoration: none;
 }
 
 div.books a.chapter {
@@ -152,34 +236,6 @@ div.books a.chapter {
     border: solid 5px;
 }
 
-#crumb ul {
-    padding: 0;
-    margin: 0;
-    line-height: 1.0;
-}
-
-#crumb li {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-    display: inline-block;
-}
-
-#header a:link, #header a:visited, #header a:active {
-    color: white;
-    text-decoration: none;
-}
-
-#header a:hover {
-    color: #d0d0ff;
-    text-decoration: underline;
-}
-
-#crumb li:not(:first-child)::before {
-    content: ">";
-    padding: .3em;
-}
-
 div.text {
     padding: 1em;
     font-weight: normal;
@@ -196,7 +252,7 @@ div.text {
     font-size: 12pt;
     font-weight: normal;
     background-color: white;
-    padding-bottom: 3rem;
+    /* padding-bottom: 3rem; */
 }
 
 div.chapterheading {
@@ -204,6 +260,7 @@ div.chapterheading {
     font-weight: bold;
     padding: .5em;
     text-align: center;
+    margin-bottom: 1em;
 }
 
 div.chapterheading b.big {
@@ -225,7 +282,7 @@ div.navheading {
     padding: 1em;
     padding-left: 1.5em;
     padding-right: 1.5em;
-    font-size: 13pt
+    font-size: 13pt;
 }
 
 ul.versesblock li {
@@ -244,7 +301,7 @@ span.verse {
 }
 
 .scripturewrapper li a:link, .scripturewrapper li a:visited, .scripturewrapper li a:active {
-    color: #44b;
+    /* color: #44b; */
     text-decoration: none;
 }
 
@@ -253,21 +310,183 @@ span.verse {
     text-decoration: underline;
 }
 
-.navheading a:link, .navheading a:visited, .navheading a:active {
-    color: #222;
-    text-decoration: none;
+li.match {
+    background-color: #ffffcc;
 }
 
-.navheading a:hover {
-    color: #4488ff;
+#crumby {
+    color: rgb(37,90,195);
+}
+#mynav .crumbLink {
+    color: rgb(46,112,244);
+}
+#crumby a:hover {
+    text-decoration: none;
+}
+#mynav .crumbLink:hover {
+    color: rgb(37,90,195);
     text-decoration: underline;
 }
 
-.navheading .nextprev {
-    position: absolute;
-    right: 1em;
+a:link, a:visited, a:active {
+    color: rgb(46,112,244);
+    text-decoration: none;
 }
 
-li.match {
-    background-color: #ffffcc;
+a:hover {
+    color: rgb(37,90,195);
+    text-decoration: underline;
+}
+
+/* SMALL AND SMALLEST SCREENS */
+@media all and (max-width: 600px) {
+    #mynav {
+        flex: 1 2 25%;
+        border-right: 1px solid rgb(236,226,217);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        min-width: 185px;
+        padding: 0;
+    }
+
+    @media all and (max-width: 500px) {
+        #mynav {
+            font-size: 11px;
+            min-width: 155px;
+        }
+        #prevnext{
+            justify-content: space-between;
+        }
+        #crumby {
+            padding: .4em 0;
+        }
+    }
+    #fixed {
+        display: none;
+    }
+    #content {
+        top: 0;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 10px 10px 0 rgba(0,0,0,0.16),0 5px 10px 0 rgba(0,0,0,0.12);
+    }
+    #notmap {
+        min-height: 50%;
+        min-width: 100%;
+        flex-direction: row;
+        background-color: white;
+        border-right: none;
+        padding-top: 0;
+    }
+
+    #mobile {
+        display: flex;
+        padding: 1em 1.3em;
+        font-family: Georgia, 'Times New Roman', Times, serif;
+        box-shadow: -5px 1px 17px 4px rgb(0 0 0 / 30%)
+}
+    #breadcrumbs {
+        align-items: flex-start;
+        padding: .5em .8em;
+    }
+    #prevnext {
+        justify-self: flex-end;
+        padding: .5em .8em;
+        margin-top: auto;
+    }
+    #scriptures {
+        flex: 2 1 75%;
+        border-bottom: .8em solid white;
+        border-top: .8em solid white;
+        padding-top: 0;
+    }
+    #scriptures ul.versesblock {
+        font-size: 11.5pt;
+    }
+    #map {
+        min-width: 100%;
+        max-width: 95%;
+        min-height: 50%;
+    }
+    #breadcrumbs2 {
+        padding-top:1em;
+    }
+}
+
+/* MEDIUM/DEFAULT VIEW ------------*/
+@media all and (min-width: 601px) and (max-width: 1299px) {
+    #mynav {
+        order: 1;
+        display: flex;
+        flex-direction: row;
+        border-top: 1px solid lightgray;
+        box-shadow: 0 -4px 20px -7px rgba(0, 0, 0, 0.4);
+        z-index: 100;
+
+    }
+    #prevnext {
+        flex: 1 1 20%;
+        padding-bottom: 0;
+        padding-top: .8em;
+        justify-content: space-evenly;
+    }
+    #breadcrumbs {
+        flex: 1 1 80%;
+        padding: 0;
+    }
+    #breadcrumbs1, #breadcrumbs2 {
+        padding: 1em 0 0 0;
+    }
+
+
+
+}
+
+/* LARGEST ------------------- */
+@media all and (min-width: 1300px) {
+    #notmap {
+        flex-direction: row;
+        background-color: white;
+        flex: 1 1 40%;
+        min-width: 600px;
+    }
+    #mynav {
+        flex: 1 1 25%;
+        border-right: 1px solid rgb(236,226,217);
+        display: flex;
+        flex-direction: row;
+        min-width: 180px;
+        justify-content: space-between;
+        padding-right: 0;
+    }
+    #breadcrumbs {
+        align-items: flex-start;
+        padding-top: 1.5em;
+    }
+    #breadcrumbs2 {
+        padding-top: 1.5em;
+        padding-left: 0em;
+        min-width: 158px;
+    }
+    #prevnext {
+        align-self: flex-start;
+        flex: 1 1 45px;
+        justify-content: space-between;
+        padding-top: 1em;
+        min-width: 45px;
+        max-width: 45px;
+        padding-right: .8em;
+    }
+    #scriptures {
+        flex: 3 1 75%;
+        border-bottom: 1em solid white;
+        border-top: 1em solid white;
+    }
+    #scriptures ul.versesblock {
+        font-size: 11.5pt;
+    }
+    .crumbLink #crumby img {
+        min-height: 1.5em;
+    }
 }

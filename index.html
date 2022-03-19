@@ -23,19 +23,43 @@
 </head>
 
 <body>
-    <div id="header">
+    <div id="fixed" class="header">
         <div id="centerhead">
             <div class="title">The Scriptures, Mapped</div >
             <div class="subtitle">Grace Fillmore</div >
         </div>
     </div>
     <div id="content">
-        <div id="scriptures"></div>
-        <div id="navigator"></div>
+        <div id="notmap">
+            <div id="mynav">
+                <div id="mobile" class="header">
+                    <div id="centerhead">
+                        <div class="title">Scripture,</div >
+                        <div class="subtitle">Mapped</div >
+                    </div>
+                </div>
+                <div id="breadcrumbs">
+                    <div id='breadcrumbs1' class='nav breadcrumb'></div>
+                    <div id='breadcrumbs2' class='nav breadcrumb'></div>
+                </div>
+                <div id="prevnext">
+                    <div id="prevnext1" class='nav prevnext'></div>
+                    <div id="prevnext2" class='nav prevnext'></div>
+                </div>
+            </div>
+            <div id="scriptures">
+                <div id="scripnav1"></div>
+                <div id="scripnav2"></div>
+            </div>
+        </div>
         <div id="map"></div>
     </div>
 
-    <script src="js/scriptures.js" type="text/javascript"></script>
+    <script 
+        src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+        crossorigin="anonymous">
+    </script>
 
     <script type="text/javascript">
         let map;
@@ -45,24 +69,26 @@
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: 31.7683, lng: 35.2137 },
                 zoom: 8,
+                mapTypeId: 'terrain'
             });
         }
-
-        function ready(readyListener) {
-            if (document.readyState !== "loading") {
-                readyListener();
-            } else {
-                document.addEventListener("DOMContentLoaded", readyListener);
+    </script>
+    
+    <script type="module">
+        import("./js/scriptures.js").then(module => {
+            function ready(readyListener) {
+                if (document.readyState !== "loading") {
+                    readyListener();
+                } else {
+                    document.addEventListener("DOMContentLoaded", readyListener);
+                }
             }
-        }
-
-        ready(function () {
-            Scriptures.init(() => { Scriptures.onHashChanged(); });
-            showLocation = Scriptures.showLocation;
-            window.addEventListener("hashchange", Scriptures.onHashChanged);
+            ready(function () {
+                module.default.init(() => { module.default.onHashChanged(); });
+                showLocation = module.default.showLocation;
+                window.addEventListener("hashchange", module.default.onHashChanged);
+            });
         });
     </script>
-
 </body>
-
 </html>
