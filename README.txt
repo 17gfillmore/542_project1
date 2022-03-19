@@ -1,7 +1,37 @@
 Author: Grace Fillmore (courtesy of Professor Liddle)
 
 PROJECT 2 DEBRIEF -----------------------------------------
+WHOO-EEE. 
 
+Feedback from users: 
+      - the layout of the smallest/phone size is not great, but I don't know what else
+        to do (and they didn't have suggestions), so I've accepted it. 
+      - Helpful insight about separating sections visually with shadows—incorporated on most
+        of the breaks that were previously just borders (or plain white space)
+      - Placement of the nav arrows. I knew this one would come up—I thought about embedding
+        it in the chapter content (perhaps fixing it and the chapter heading), but I 
+        was too intimidated early in the project + too locked in later. 
+      - User didn't notice, but there's a little bug with the scrolling (page placement stays)
+        after following a link sometimes. I could probably fix it with anchors, which is related
+        to a user suggestion to make the Home view volumes collapsible.
+    I'm pretty happy with how the navigation turned out, other than the placement of the back/next
+    arrows. The placement and styling were clear enough to make it easy to get around without
+    misclicking or wishing for a different kind of link to follow. (according to my husband at least)
+
+Biggest takeaway: it's quite a challenge to structure/place things in a way that's resilient to change.
+There were so many times that I wanted to adjust the spacing on one element and had to deal with that
+cascading through to other elements. On the other hand, there were also a lot of times that I was able to 
+avoid that thanks to flex/grid. I don't like how many hard-coded/slightly janky fixes the project has for 
+div/content placement, both with styling and with stuff like embedding the hash for the back/next buttons. 
+
+To explore more: 
+    animation (I mimicked the style of the video to crossfade nav content; would like to learn
+more about other/standard ways of animating content. Also, I didn't have time to get into it, but my animations
+don't fire at the same time and I want to mess with async/await to get it feeling smoother for the user.)
+    functionality/modularity. I broke everything out before starting Project2 proper, but I ended up adding 
+a lot, and I'm overdue to sort through my features for better cohesion. In the same vein, I need to go through 
+my styling again and make sure everything's applied at the most base level possible. 
+    
 
 
 POST-PROJECT 1 DEBRIEF ------------------------------------
